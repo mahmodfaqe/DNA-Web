@@ -1,0 +1,467 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   Fonts
+
+   Self-hosted and bundled — nothing loads from a third-party CDN, so the app
+   works on a slow or filtered connection and the CSP can stay strict.
+
+   Importing each package's index.css would pull seventeen subset files
+   (Cyrillic, Greek, Vietnamese) that this app will never render. Declaring the
+   three faces by hand cuts the font payload from ~408 kB to ~134 kB, and the
+   unicode-range on Vazirmatn means an English reader never downloads the Arabic
+   face at all.
+   ========================================================================== */
+
+@font-face {
+    font-family: 'Vazirmatn Variable';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url('../../node_modules/@fontsource-variable/vazirmatn/files/vazirmatn-arabic-wght-normal.woff2') format('woff2-variations');
+    unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1,
+        U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF,
+        U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+    font-family: 'Inter Variable';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url('../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+        U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'JetBrains Mono Variable';
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 800;
+    src: url('../../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
+        U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@source '../views/**/*.blade.php';
+@source '../js/**/*.js';
+
+/* ==========================================================================
+   Tokens
+
+   The palette comes from the subject's own world. Sanger base-calling has had
+   assigned colours for A/T/C/G for decades, so those four are reserved strictly
+   for data and never used for chrome. The interface colour is a deep ultramarine
+   that sits outside the base palette, which keeps "this is a nucleotide"
+   visually distinct from "this is a button".
+   ========================================================================== */
+
+@theme {
+    --font-sans: 'Inter Variable', 'Vazirmatn Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-arabic: 'Vazirmatn Variable', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --color-ink-950: #080d16;
+    --color-ink-900: #0b1220;
+    --color-ink-700: #24304a;
+    --color-ink-500: #56617a;
+    --color-ink-400: #7a8398;
+    --color-ink-300: #a4abbb;
+
+    --color-paper: #f6f7f9;
+    --color-line: #e3e7ec;
+    --color-line-strong: #ccd3dc;
+
+    --color-brand-50: #eef2f9;
+    --color-brand-100: #dae3f2;
+    --color-brand-500: #2b508f;
+    --color-brand-600: #1b3a6b;
+    --color-brand-700: #142c52;
+
+    /* Signal: reserved for variants, i.e. "look here". Never decorative. */
+    --color-signal-50: #fdf5e9;
+    --color-signal-500: #b45309;
+    --color-signal-600: #93400a;
+
+    --color-good-50: #eaf6ef;
+    --color-good-600: #2e7d4f;
+
+    --color-alert-50: #fdeeec;
+    --color-alert-600: #b3352a;
+
+    /* Nucleotide colours — data only */
+    --color-base-a: #2e9e5b;
+    --color-base-t: #d4483b;
+    --color-base-c: #2b6cb0;
+    --color-base-g: #3d4451;
+    --color-base-n: #b9bfc9;
+
+    --radius-panel: 0.875rem;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+    /* Arabic-script languages get the face chosen for them. This is a
+       document-level switch rather than a per-component one, so a Kurdish page
+       never renders half of itself in a Latin fallback. */
+    html:lang(ckb),
+    html:lang(ar) {
+        font-family: var(--font-arabic);
+        line-height: 1.85;
+    }
+
+    html:lang(en) {
+        font-family: var(--font-sans);
+        line-height: 1.6;
+    }
+
+    body {
+        background-color: var(--color-paper);
+        color: var(--color-ink-900);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Figures in a data table must line up regardless of the surrounding script,
+       so every number is set in tabular, Latin digits. */
+    table,
+    .figure {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: 'tnum' 1;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-brand-600);
+        outline-offset: 2px;
+        border-radius: 3px;
+    }
+
+    ::selection {
+        background: var(--color-brand-100);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+/* ==========================================================================
+   Components
+   ========================================================================== */
+
+@layer components {
+    .panel {
+        background: #fff;
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius-panel);
+    }
+
+    .panel-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem 1rem;
+        padding: 1.125rem 1.25rem;
+        border-bottom: 1px solid var(--color-line);
+    }
+
+    .panel-title {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    .panel-note {
+        font-size: 0.75rem;
+        color: var(--color-ink-500);
+        max-width: 62ch;
+    }
+
+    .eyebrow {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--color-ink-400);
+    }
+
+    /* Latin-only strings (IDs, codons, base letters, coordinates) must not
+       inherit RTL ordering, or "ATG" renders reversed beside Kurdish text. */
+    .ltr-data {
+        direction: ltr;
+        unicode-bidi: isolate;
+        text-align: start;
+        font-family: var(--font-mono);
+        font-variant-ligatures: none;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border-radius: 0.625rem;
+        padding: 0.625rem 1.125rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-primary {
+        background: var(--color-brand-600);
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background: var(--color-brand-700);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.55;
+        cursor: progress;
+    }
+
+    .btn-quiet {
+        background: #fff;
+        border-color: var(--color-line-strong);
+        color: var(--color-ink-700);
+    }
+
+    .btn-quiet:hover {
+        border-color: var(--color-ink-400);
+        color: var(--color-ink-900);
+    }
+
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.75rem;
+        border-radius: 0.5rem;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        border-radius: 999px;
+        padding: 0.1875rem 0.625rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: var(--color-brand-50);
+        color: var(--color-brand-600);
+        white-space: nowrap;
+    }
+
+    .chip-signal {
+        background: var(--color-signal-50);
+        color: var(--color-signal-600);
+    }
+
+    .chip-good {
+        background: var(--color-good-50);
+        color: var(--color-good-600);
+    }
+
+    .chip-alert {
+        background: var(--color-alert-50);
+        color: var(--color-alert-600);
+    }
+
+    .chip-muted {
+        background: var(--color-paper);
+        color: var(--color-ink-500);
+    }
+
+    /* Metric strip: hairline-separated readings rather than five boxed cards.
+       Boxes suggest five separate objects; these are five readings of one file. */
+    .metric-strip {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .metric {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid var(--color-line);
+        border-inline-start: 1px solid var(--color-line);
+    }
+
+    .metric:nth-child(-n + 2) {
+        border-top: 0;
+    }
+
+    .metric:nth-child(odd) {
+        border-inline-start: 0;
+    }
+
+    @media (min-width: 48rem) {
+        .metric-strip {
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+        }
+
+        .metric {
+            border-top: 0;
+            border-inline-start: 1px solid var(--color-line);
+        }
+
+        .metric:first-child {
+            border-inline-start: 0;
+        }
+
+        .metric:nth-child(odd) {
+            border-inline-start: 1px solid var(--color-line);
+        }
+
+        .metric:first-child {
+            border-inline-start: 0;
+        }
+    }
+
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .metric-label {
+        margin-top: 0.125rem;
+        font-size: 0.75rem;
+        color: var(--color-ink-500);
+    }
+
+    .metric-sub {
+        margin-top: 0.25rem;
+        font-size: 0.6875rem;
+        color: var(--color-ink-400);
+    }
+
+    .data-table {
+        width: 100%;
+        font-size: 0.8125rem;
+        border-collapse: collapse;
+    }
+
+    .data-table th {
+        text-align: start;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--color-ink-500);
+        background: var(--color-paper);
+        white-space: nowrap;
+    }
+
+    .data-table td {
+        padding: 0.75rem 0.875rem;
+        border-top: 1px solid var(--color-line);
+        vertical-align: top;
+    }
+
+    .data-table tbody tr:hover {
+        background: #fbfcfd;
+    }
+
+    /* The composition track and its ruler always read 5′ → 3′, left to right,
+       even on an RTL page. Mirroring it would mirror the biology. */
+    .track {
+        direction: ltr;
+    }
+
+    .dropzone {
+        display: block;
+        cursor: pointer;
+        border: 1.5px dashed var(--color-line-strong);
+        border-radius: 1rem;
+        background: #fff;
+        padding: 2.25rem 1.5rem;
+        text-align: center;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .dropzone:hover,
+    .dropzone.is-active {
+        border-color: var(--color-brand-500);
+        background: var(--color-brand-50);
+    }
+
+    .code-block {
+        direction: ltr;
+        text-align: left;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        line-height: 1.75;
+        background: var(--color-ink-950);
+        color: #cfe3ff;
+        border-radius: 0.75rem;
+        padding: 1rem 1.125rem;
+        overflow-x: auto;
+        white-space: pre;
+    }
+
+    .alert {
+        display: flex;
+        gap: 0.75rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--color-alert-600);
+        background: var(--color-alert-50);
+        color: #7a241c;
+        padding: 0.875rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* ==========================================================================
+   Print
+
+   A vector print stylesheet replaces the previous 2 MB client-side PDF library.
+   Text stays selectable and searchable, Arabic and Kurdish shape correctly, and
+   the output no longer depends on any JavaScript running at all.
+   ========================================================================== */
+
+@media print {
+    @page {
+        size: A4;
+        margin: 14mm;
+    }
+
+    body {
+        background: #fff;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .panel {
+        border-color: #c8ced6;
+        break-inside: avoid;
+    }
+
+    .data-table {
+        font-size: 9pt;
+    }
+
+    .data-table thead {
+        display: table-header-group;
+    }
+
+    tr,
+    .metric {
+        break-inside: avoid;
+    }
+}

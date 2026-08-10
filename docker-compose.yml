@@ -1,0 +1,82 @@
+name: dna-web
+
+services:
+  backend:
+    build: ./DNA-Backend
+    container_name: dna_backend
+    restart: unless-stopped
+    environment:
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10485760}
+      MAX_RECORDS: ${MAX_RECORDS:-500}
+      ALIGN_MAX_BP: ${ALIGN_MAX_BP:-3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-30}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    # No `ports:` mapping. The analysis service is only ever called by the web
+    # container, so it stays on the internal network instead of being published
+    # to every interface on the host. Add `ports: ["127.0.0.1:8000:8000"]`
+    # temporarily if you need to reach /docs while developing.
+    expose:
+      - "8000"
+    networks: [internal]
+
+  db:
+    image: mysql:8.0
+    container_name: dna_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_USER: ${MYSQL_USER:?set MYSQL_USER in .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    networks: [internal]
+
+  frontend:
+    build: ./DNA-Frontend
+    container_name: dna_frontend
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    environment:
+      APP_NAME: ${APP_NAME:-DNA Analytics}
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      APP_KEY: ${APP_KEY:?run `php artisan key:generate --show` and set APP_KEY in .env}
+      APP_LOCALE: ${APP_LOCALE:-ku}
+
+      BACKEND_API_URL: http://backend:8000
+      MAX_UPLOAD_KB: ${MAX_UPLOAD_KB:-10240}
+
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      QUEUE_CONNECTION: sync
+      LOG_CHANNEL: stderr
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks: [internal]
+
+volumes:
+  db_data:
+
+networks:
+  internal:
+    driver: bridge
