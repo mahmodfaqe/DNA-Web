@@ -51,7 +51,7 @@ class CompilerController extends Controller
         return redirect()->route('compiler.show', ['circuit' => $circuit->id]);
     }
 
-    public function show(Circuit $circuit): mixed
+    public function show(string $locale, Circuit $circuit): mixed
     {
         return view('compiler.show', ['circuit' => $circuit]);
     }
@@ -61,7 +61,7 @@ class CompilerController extends Controller
      * included: those lines carry the source sentence and the synthesis warning,
      * so the file stays self-explanatory once it leaves the browser.
      */
-    public function fasta(Circuit $circuit): Response
+    public function fasta(string $locale, Circuit $circuit): Response
     {
         abort_unless($circuit->succeeded, 404);
 
@@ -71,7 +71,7 @@ class CompilerController extends Controller
         ]);
     }
 
-    public function json(Circuit $circuit): JsonResponse
+    public function json(string $locale, Circuit $circuit): JsonResponse
     {
         return response()->json($circuit->compiled)
             ->header('Content-Disposition', 'attachment; filename="circuit-' . $circuit->id . '.json"');

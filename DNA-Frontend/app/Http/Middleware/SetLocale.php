@@ -27,6 +27,9 @@ class SetLocale
         // caller having to remember to pass it.
         URL::defaults(['locale' => $locale]);
 
+        // ڕێگە دەگرێت لەوەی locale وەک پارامێتەری یەکەم بنێردرێت بۆ فەنکشنەکانی Controller
+        $request->route()->forgetParameter('locale');
+
         $response = $next($request);
         $response->headers->set('Content-Language', Locales::tag($locale));
 
