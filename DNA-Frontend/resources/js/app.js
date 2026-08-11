@@ -157,8 +157,13 @@ function initCompiler() {
  * ---------------------------------------------------------------------- */
 
 function initSimulator() {
-    const form = document.querySelector('[data-simulate-form]');
+    const form = document.querySelector('[data-simulate-form]')
+        ?? document.querySelector('[data-memory-form]');
     if (!form) return;
+
+    const busyLabel = form.matches('[data-memory-form]')
+        ? t('labelModelling', 'Modelling…')
+        : t('labelSimulating', 'Simulating…');
 
     form.querySelectorAll('[data-slider]').forEach((slider) => {
         const output = form.querySelector(`[data-slider-output="${slider.name}"]`);
@@ -179,7 +184,7 @@ function initSimulator() {
         const button = form.querySelector('[data-submit]');
         if (!button) return;
         button.disabled = true;
-        button.textContent = t('labelSimulating', 'Simulating…');
+        button.textContent = busyLabel;
     });
 }
 

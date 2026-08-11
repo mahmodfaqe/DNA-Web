@@ -5,6 +5,7 @@ return [
         'analysis' => 'Sequence analysis',
         'compiler' => 'Circuit compiler',
         'simulator' => 'Noise simulator',
+        'memory' => 'Memory architect',
     ],
 
     'hero' => [

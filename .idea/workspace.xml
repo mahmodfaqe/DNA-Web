@@ -5,19 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6d2f59c6-acf3-405f-9a48-cb7996334142" name="Changes" comment="update">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Backend/app/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Backend/app/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Backend/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Backend/app/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Backend/app/services/biocompiler/diagnostics.py" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Backend/app/services/biocompiler/diagnostics.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Frontend/app/Http/Controllers/CompilerController.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/app/Http/Controllers/CompilerController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Frontend/app/Services/DnaBackendClient.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/app/Services/DnaBackendClient.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Frontend/config/services.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/config/services.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Frontend/resources/css/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/resources/css/app.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Frontend/resources/views/compiler/show.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/resources/views/compiler/show.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Frontend/resources/views/components/tabs.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/resources/views/components/tabs.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Frontend/resources/views/partials/diagnostics.blade.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Frontend/routes/console.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/routes/console.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Frontend/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/routes/web.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/lang/ar/compiler.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/lang/ar/compiler.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/lang/ar/errors.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/lang/ar/errors.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/lang/en/compiler.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/lang/en/compiler.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/lang/en/errors.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/lang/en/errors.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/lang/ku/compiler.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/lang/ku/compiler.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/lang/ku/errors.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/lang/ku/errors.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/resources/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/resources/js/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/resources/views/layouts/app.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/resources/views/layouts/app.blade.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -197,7 +192,7 @@
       <workItem from="1786322707589" duration="46000" />
       <workItem from="1786322783937" duration="115000" />
       <workItem from="1786322938795" duration="7372000" />
-      <workItem from="1786463405450" duration="4143000" />
+      <workItem from="1786463405450" duration="6586000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <option name="closed" value="true" />
@@ -263,7 +258,55 @@
       <option name="project" value="LOCAL" />
       <updated>1786466486927</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="update">
+      <option name="closed" value="true" />
+      <created>1786473406968</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1786473406968</updated>
+    </task>
+    <task id="LOCAL-00010" summary="update">
+      <option name="closed" value="true" />
+      <created>1786473725952</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1786473725952</updated>
+    </task>
+    <task id="LOCAL-00011" summary="update">
+      <option name="closed" value="true" />
+      <created>1786474899320</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1786474899320</updated>
+    </task>
+    <task id="LOCAL-00012" summary="update">
+      <option name="closed" value="true" />
+      <created>1786475143137</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1786475143137</updated>
+    </task>
+    <task id="LOCAL-00013" summary="update">
+      <option name="closed" value="true" />
+      <created>1786475674492</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1786475674492</updated>
+    </task>
+    <task id="LOCAL-00014" summary="update">
+      <option name="closed" value="true" />
+      <created>1786476152141</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1786476152141</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

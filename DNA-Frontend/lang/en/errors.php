@@ -51,6 +51,14 @@ return [
         'seed_invalid' => 'A seed must be a whole number. Leave it blank to have one chosen for you.',
     ],
 
+    'memory' => [
+        'signal_required' => 'Choose a signal to record.',
+        'signal_unknown' => 'That signal is not one this library has a sensor for.',
+        'chassis_unknown' => 'That host is not one this tool designs for.',
+        'hold_range' => 'The holding time must be between :minimum and :maximum hours.',
+        'payload_too_long' => 'The cargo sequence is too long. Keep it under 60,000 characters.',
+    ],
+
     'not_found' => [
         'title' => 'Result not found',
         'body' => 'This result has expired or the link is wrong. Uploading the file again will produce a new one.',
