@@ -44,6 +44,14 @@ class Settings:
     # Oligo thermodynamics (nearest-neighbour) are only valid for short probes.
     tm_nn_max_bp: int = field(default_factory=lambda: _int_env("TM_NN_MAX_BP", 50))
 
+    # --- Stochastic simulation ------------------------------------------
+    # The simulator's cost is measured in reaction events, not in input size:
+    # a hundred cells watched for four hours is millions of them. This ceiling
+    # is the whole ensemble's budget, split across the cells and across the
+    # control run, and a run that reaches it stops and says so rather than
+    # holding the worker until the HTTP client gives up.
+    sim_max_steps: int = field(default_factory=lambda: _int_env("SIM_MAX_STEPS", 6_000_000))
+
     # --- Job store ------------------------------------------------------
     job_ttl_seconds: int = field(default_factory=lambda: _int_env("JOB_TTL_SECONDS", 3600))
     job_store_max: int = field(default_factory=lambda: _int_env("JOB_STORE_MAX", 200))

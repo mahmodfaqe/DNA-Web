@@ -23,6 +23,7 @@
     data-label-copied="{{ __('common.actions.copied') }}"
     data-label-no-protein="{{ __('analysis.orf.protein_empty') }}"
     data-label-compiling="{{ __('compiler.hero.submitting') }}"
+    data-label-simulating="{{ __('simulator.form.submitting') }}"
 >
 <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:shadow">
     {{ __('common.nav.skip_to_content') }}

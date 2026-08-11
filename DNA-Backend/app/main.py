@@ -25,7 +25,7 @@ from fastapi.responses import JSONResponse
 from .config import settings
 from .errors import AnalysisError, ErrorCode
 from .jobs import store
-from .services import biocompiler, fasta
+from .services import biocompiler, bionoise, fasta
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level, logging.INFO),
@@ -203,6 +203,30 @@ async def compile_circuit(text: str = Body(..., embed=True, max_length=biocompil
     biology. That is information the user needs, not an error to swallow.
     """
     return biocompiler.compile_text(text)
+
+
+@app.post("/api/v1/simulate", tags=["simulator"], dependencies=[Depends(rate_limit)])
+def simulate(request: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    """Run a stochastic simulation of gene expression noise and crosstalk.
+
+    Declared `def` rather than `async def` deliberately. This is seconds of
+    tight CPU-bound loop with no await in it; on the event loop it would block
+    every other request in the process for the duration. FastAPI runs a sync
+    handler in a worker thread, which keeps `/health` answering while a
+    simulation is in flight.
+
+    Like the compiler, it does not raise for a result the user will not like:
+    an unusable parameter is clamped and a diagnostic says so, and a run that
+    exhausts its budget returns what it measured plus a warning that it stopped
+    early.
+    """
+    return bionoise.simulate(request)
+
+
+@app.get("/api/v1/simulate/presets", tags=["simulator"])
+async def simulation_presets() -> dict[str, Any]:
+    """The networks this service can simulate, for a UI building its own form."""
+    return {"presets": list(bionoise.PRESETS)}
 
 
 @app.get("/api/v1/job/{job_id}", tags=["analysis"])

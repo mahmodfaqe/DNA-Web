@@ -4,6 +4,7 @@ return [
     'nav' => [
         'analysis' => 'تحليل التسلسل',
         'compiler' => 'مترجم الدارات',
+        'simulator' => 'محاكي الضوضاء',
     ],
 
     'hero' => [

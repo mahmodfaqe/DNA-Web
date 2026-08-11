@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnalysisController;
 use App\Http\Controllers\CompilerController;
+use App\Http\Controllers\SimulatorController;
 use App\Http\Middleware\SetLocale;
 use App\Support\Locales;
 use Illuminate\Http\Request;
@@ -37,4 +38,17 @@ Route::prefix('{locale}')
         Route::get('/circuit/{circuit}', [CompilerController::class, 'show'])->name('compiler.show');
         Route::get('/circuit/{circuit}/circuit.fasta', [CompilerController::class, 'fasta'])->name('compiler.fasta');
         Route::get('/circuit/{circuit}/export.json', [CompilerController::class, 'json'])->name('compiler.json');
+
+        // Third tab: stochastic simulation of expression noise and crosstalk.
+        Route::get('/simulator', [SimulatorController::class, 'index'])->name('simulator.index');
+        // Throttled harder than the other two. An analysis is bounded by the
+        // file it was given; a simulation is bounded only by what the user
+        // asked for, and each one is seconds of backend CPU.
+        Route::post('/simulator', [SimulatorController::class, 'store'])
+            ->middleware('throttle:10,1')
+            ->name('simulator.store');
+
+        Route::get('/simulation/{simulation}', [SimulatorController::class, 'show'])->name('simulator.show');
+        Route::get('/simulation/{simulation}/export.csv', [SimulatorController::class, 'csv'])->name('simulator.csv');
+        Route::get('/simulation/{simulation}/export.json', [SimulatorController::class, 'json'])->name('simulator.json');
     });

@@ -148,10 +148,46 @@ function initCompiler() {
     });
 }
 
+/* -------------------------------------------------------------------------
+ * Simulator: live slider readouts, submit state
+ *
+ * Enhancement only. The sliders are real range inputs with server-rendered
+ * values beside them, so with JavaScript off the form still submits and still
+ * says what it will run — it just stops updating the number as you drag.
+ * ---------------------------------------------------------------------- */
+
+function initSimulator() {
+    const form = document.querySelector('[data-simulate-form]');
+    if (!form) return;
+
+    form.querySelectorAll('[data-slider]').forEach((slider) => {
+        const output = form.querySelector(`[data-slider-output="${slider.name}"]`);
+        if (!output) return;
+
+        const scale = Number(slider.dataset.scale) || 1;
+        const suffix = slider.dataset.suffix ?? '';
+
+        const render = () => {
+            output.textContent = `${Math.round(Number(slider.value) * scale)}${suffix}`;
+        };
+
+        slider.addEventListener('input', render);
+        render();
+    });
+
+    form.addEventListener('submit', () => {
+        const button = form.querySelector('[data-submit]');
+        if (!button) return;
+        button.disabled = true;
+        button.textContent = t('labelSimulating', 'Simulating…');
+    });
+}
+
 /* ---------------------------------------------------------------------- */
 
 document.addEventListener('DOMContentLoaded', () => {
     initUpload();
     initProteinDialog();
     initCompiler();
+    initSimulator();
 });

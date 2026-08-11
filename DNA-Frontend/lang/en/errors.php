@@ -43,6 +43,14 @@ return [
         'too_long' => 'Keep the description under :characters characters.',
     ],
 
+    'simulator' => [
+        'preset_required' => 'Choose a network to simulate.',
+        'preset_unknown' => 'That network is not one the simulator knows.',
+        'cells_range' => 'The number of cells must be between :minimum and :maximum. Every reaction in every cell is simulated individually, so the ceiling is what keeps one request from occupying the service.',
+        'minutes_range' => 'The duration must be between :minimum and :maximum minutes.',
+        'seed_invalid' => 'A seed must be a whole number. Leave it blank to have one chosen for you.',
+    ],
+
     'not_found' => [
         'title' => 'Result not found',
         'body' => 'This result has expired or the link is wrong. Uploading the file again will produce a new one.',

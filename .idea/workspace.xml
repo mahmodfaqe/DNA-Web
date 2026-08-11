@@ -5,8 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6d2f59c6-acf3-405f-9a48-cb7996334142" name="Changes" comment="update">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Backend/app/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Backend/app/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Backend/app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Backend/app/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Backend/app/services/biocompiler/diagnostics.py" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Backend/app/services/biocompiler/diagnostics.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DNA-Frontend/app/Http/Controllers/CompilerController.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/app/Http/Controllers/CompilerController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DNA-Frontend/app/Http/Middleware/SetLocale.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/app/Http/Middleware/SetLocale.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/app/Services/DnaBackendClient.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/app/Services/DnaBackendClient.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/config/services.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/config/services.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/resources/css/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/resources/css/app.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/resources/views/compiler/show.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/resources/views/compiler/show.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/resources/views/components/tabs.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/resources/views/components/tabs.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/resources/views/partials/diagnostics.blade.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/routes/console.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/routes/console.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/routes/web.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -186,7 +197,7 @@
       <workItem from="1786322707589" duration="46000" />
       <workItem from="1786322783937" duration="115000" />
       <workItem from="1786322938795" duration="7372000" />
-      <workItem from="1786463405450" duration="2831000" />
+      <workItem from="1786463405450" duration="4143000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <option name="closed" value="true" />
@@ -244,7 +255,15 @@
       <option name="project" value="LOCAL" />
       <updated>1786464795115</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="update">
+      <option name="closed" value="true" />
+      <created>1786466486927</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1786466486927</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

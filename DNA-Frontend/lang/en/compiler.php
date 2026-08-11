@@ -4,6 +4,7 @@ return [
     'nav' => [
         'analysis' => 'Sequence analysis',
         'compiler' => 'Circuit compiler',
+        'simulator' => 'Noise simulator',
     ],
 
     'hero' => [

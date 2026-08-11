@@ -77,6 +77,12 @@
 
     --color-brand-50: #eef2f9;
     --color-brand-100: #dae3f2;
+    /* 200 and 400 exist for one job: the noise budget is a stacked bar whose
+       segments have a real order, from the irreducible floor to the mechanisms
+       on top of it. An ordered composition wants one hue getting darker, not
+       four unrelated colours, and that needs four visibly separated steps. */
+    --color-brand-200: #9db4d6;
+    --color-brand-400: #5a7fb5;
     --color-brand-500: #2b508f;
     --color-brand-600: #1b3a6b;
     --color-brand-700: #142c52;

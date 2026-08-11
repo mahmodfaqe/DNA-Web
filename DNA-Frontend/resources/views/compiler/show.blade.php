@@ -188,6 +188,8 @@
             </section>
         @endif
 
-        @include('partials.diagnostics')
+        <x-diagnostics :items="$circuit->diagnostics()"
+                       :counts="$counts"
+                       namespace="compiler" />
     </div>
 @endsection

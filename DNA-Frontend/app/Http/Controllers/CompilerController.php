@@ -24,12 +24,6 @@ class CompilerController extends Controller
         ]);
     }
 
-    /**
-     * A sentence the compiler could not parse is still stored and still gets a
-     * URL. The diagnostics explaining *why* it failed are the most instructive
-     * output the tool produces, and throwing them away with a redirect-back
-     * would waste them.
-     */
     public function store(CompileRequest $request): RedirectResponse
     {
         try {
@@ -51,17 +45,12 @@ class CompilerController extends Controller
         return redirect()->route('compiler.show', ['circuit' => $circuit->id]);
     }
 
-    public function show(string $locale, Circuit $circuit): mixed
+    public function show(Circuit $circuit): mixed
     {
         return view('compiler.show', ['circuit' => $circuit]);
     }
 
-    /**
-     * The FASTA is served exactly as the compiler produced it, comment lines
-     * included: those lines carry the source sentence and the synthesis warning,
-     * so the file stays self-explanatory once it leaves the browser.
-     */
-    public function fasta(string $locale, Circuit $circuit): Response
+    public function fasta(Circuit $circuit): Response
     {
         abort_unless($circuit->succeeded, 404);
 
@@ -71,7 +60,7 @@ class CompilerController extends Controller
         ]);
     }
 
-    public function json(string $locale, Circuit $circuit): JsonResponse
+    public function json(Circuit $circuit): JsonResponse
     {
         return response()->json($circuit->compiled)
             ->header('Content-Disposition', 'attachment; filename="circuit-' . $circuit->id . '.json"');
