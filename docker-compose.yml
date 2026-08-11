@@ -14,14 +14,7 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
       RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-30}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
-    healthcheck:
-      test: [ "CMD-SHELL", "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/\")' || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-    networks: [ internal ]
+    networks: [internal]
 
   db:
     image: mysql:8.0
@@ -74,7 +67,7 @@ services:
       db:
         condition: service_healthy
       backend:
-        condition: service_healthy
+        condition: service_started
     networks: [internal]
 
 volumes:
