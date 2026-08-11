@@ -12,7 +12,7 @@ missense or nonsense.
 
 ---
 
-## Three tools
+## Four tools
 
 **Sequence analysis** — upload a FASTA file, get composition, thermodynamics,
 reading frames and an aligned comparison.
@@ -55,6 +55,25 @@ Two genes with no connection at all still correlate around +0.6, because a cell
 rich in ribosomes makes more of both. Showing that number next to the one with
 the shared factor removed is the point of the tab.
 
+**DeepBio-Memory Architect** — where should a cell keep a bit? It can live in
+protein concentrations or in the DNA itself, and everything else follows from
+that one choice:
+
+```
+record lactose in E. coli, hold 24 h, may stay on a plasmid
+
+  Recombinase register   retention  99%   fidelity  52%   → 78.0
+  Toggle switch          retention 100%   fidelity 100%   → 90.8  ✓
+
+  → 48% of an uninduced population writes itself within 24 h,
+    from a promoter that is 2% active with no inducer at all
+  → and because the flip is written into DNA, it is permanent
+```
+
+Switch the sensor to arabinose — 0.5% leak instead of 2% — and the answer
+changes. Both architectures are modelled every time and the loser is shown in
+full, because a recommendation is only checkable if what it beat is visible.
+
 ## Architecture
 
 ```
@@ -66,7 +85,7 @@ browser ──► DNA-Frontend (Laravel 13, Apache) ──► DNA-Backend (FastA
 | Service | Role | Exposed |
 |---|---|---|
 | `frontend` | Interface, localisation, result storage, exports | `:8080` |
-| `backend` | Sequence analysis, circuit compilation, stochastic simulation | internal only |
+| `backend` | Sequence analysis, circuit compilation, simulation, memory design | internal only |
 | `db` | Stored analyses | internal only |
 
 The backend is a pure computation service. It never returns human-readable prose
@@ -113,7 +132,7 @@ DNA-Backend/data/mutation_demo.fasta  substitution, frameshift and in-frame dele
 # Analysis service
 cd DNA-Backend
 pip install -r requirements-dev.txt
-pytest                                # 102 tests
+pytest                                # 143 tests
 
 # Web application
 cd DNA-Frontend
@@ -161,6 +180,8 @@ The analysis service documents itself at `/docs` when reachable.
 | `POST /api/v1/compile` | Compile a description into a circuit |
 | `POST /api/v1/simulate` | Run a stochastic simulation, returns the full result |
 | `GET /api/v1/simulate/presets` | The networks the simulator can run |
+| `POST /api/v1/memory` | Compare memory architectures, returns the design and its DNA |
+| `GET /api/v1/memory/options` | Signals, hosts and recombinases available |
 | `POST /api/v1/analyze-async` | Queue an analysis, returns a `job_id` |
 | `GET /api/v1/job/{job_id}` | Poll an async job |
 
@@ -179,8 +200,8 @@ Uploaded sequences are research material, so results are not kept indefinitely:
 docker compose exec frontend php artisan analyses:prune --days=30
 ```
 
-This covers stored analyses, compiled circuits and simulation runs alike, and
-runs daily through the scheduler. Adjust the window to whatever policy your
+This covers stored analyses, compiled circuits, simulation runs and memory
+designs alike, and runs daily through the scheduler. Adjust the window to whatever policy your
 department settles on.
 
 ## Backups
@@ -199,6 +220,18 @@ docker compose exec -T db mysql -u root -p dna_db < dna_db_backup.sql
 - [ ] `APP_URL` set to the public URL, over HTTPS
 - [ ] TLS terminated by a reverse proxy in front of `frontend`
 - [ ] A retention window agreed with whoever owns the data
+
+## A note on the memory architect's output
+
+The recommendation depends on parameters the tool does not measure — above all
+how leaky your sensor actually is in your hands. Both architectures are modelled
+and both are shown, with the scoring weights stated on the page, so the verdict
+can be argued with rather than taken on trust.
+
+Att sites are included as literal sequence and must be verified before ordering:
+their central dinucleotide is the entire mechanism of directionality, and a
+single wrong base there builds a recombinase that writes in both directions
+rather than failing loudly.
 
 ## A note on the simulator's output
 

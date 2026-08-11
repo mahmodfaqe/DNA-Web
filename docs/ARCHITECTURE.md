@@ -388,3 +388,156 @@ assumptions nobody reads.
 - **Cost is in reaction events, not input size.** A hundred cells watched for
   four hours is millions of them, so the ensemble runs against a step budget and
   a run that exhausts it stops and says so rather than holding the worker.
+
+---
+
+# DeepBio-Memory Architect (fourth tab)
+
+Two ways to store a bit, compared on the conditions the user gives, and the
+better one built:
+
+```
+signal + host + how long it must hold
+  → both architectures modelled       recombinase register, toggle switch
+  → ODE, two phases                   write while the signal is on,
+                                      retention after it goes away
+  → scored                            retention, fidelity, speed, burden
+  → orientation chosen                by scanning the register's own bases
+  → DNA + parts manifest + diagnostics
+```
+
+## The claim the whole tab rests on
+
+Choosing a memory architecture is not a matter of taste, because the two options
+put the bit in physically different places and everything else follows:
+
+| | Toggle switch | Recombinase register |
+|---|---|---|
+| The bit is | a ratio of protein concentrations | an inversion of the DNA |
+| Held by | continuous expression | the replisome, for free |
+| Survives division | only if expression continues | yes, it is copied |
+| Erasable | trivially | only with a second enzyme |
+| Fails by | dilution, and noise crossing the barrier | leaky integrase writing it uninvited |
+
+So the trade is retention against reversibility, and which side wins depends on
+how long the memory must last, how many divisions happen in between, and how
+leaky the sensor is. Those are exactly the questions the form asks, and nothing
+else in the tool matters as much as getting that framing in front of the user.
+
+## Why both architectures are always modelled
+
+The losing design is returned in full and rendered in full. A recommendation is
+only checkable if what it beat is visible, and the most useful thing a student
+can do with this page is disagree with it — which requires seeing the numbers
+that produced the verdict, not just the verdict.
+
+The scoring weights are stated on the page for the same reason. They are
+editorial judgements, not measurements, and a weight nobody can see is a weight
+nobody can argue with.
+
+## Disqualification is not a low score
+
+An architecture that cannot meet a stated requirement is excluded outright
+rather than ranked last. A circuit that cannot be erased is not a *worse* answer
+to "it must be erasable" — it is the wrong one, and letting it win on retention
+would be the model overruling the user about their own experiment.
+
+## The leak is the finding
+
+The failure the tab exists to quantify is the one that does not look like a
+failure. A lactose promoter that is 2% active with no inducer expresses enough
+integrase, over a day, to flip roughly half an uninduced population — and
+because the flip is written into DNA, those cells read as signalled for the rest
+of the experiment. Nothing about the construct looks wrong; the data is simply
+false.
+
+That is why the toggle wins the default configuration despite being the weaker
+memory in every other respect, and why swapping to a tighter sensor changes the
+answer. The comparison surfaces it as a number instead of leaving it as a
+footnote about promoter choice.
+
+## What the deterministic model cannot do
+
+Rate equations describe an average cell. For a bistable circuit their answer to
+"how long does it hold?" is "for ever", which is precisely wrong and precisely
+the reason the third tab exists.
+
+So the toggle's retention figure is not taken from the ODE. It comes from asking
+how large an expression burst would have to be to cross the barrier between the
+two states — the distance from the low steady state up to the *saddle*, not to
+the other stable state — and how often a burst that large arrives. Burst sizes
+are roughly geometric with mean *b*, so the chance any one burst suffices is
+about exp(−Δ/b), and the waiting time follows.
+
+It is a first-order argument and the result says so, alongside a pointer to the
+simulator, which measures the same quantity by counting actual flips.
+
+## Orientation is decided by the bases
+
+A recombinase memory works by inverting DNA, so the two states are the same
+bases read from opposite strands. Inverting a sequence does not preserve its
+regulatory content: the −35 and −10 elements a polymerase looks for are not
+palindromic, so a stretch that is inert one way round can read as a promoter the
+other way.
+
+The scan therefore looks at both orientations for cryptic promoters, intrinsic
+terminators, repeats and homopolymer runs — and, critically, records which
+*direction* each hazard fires in relative to the rest of the construct:
+
+| Hazard | Weight | Why |
+|---|---|---|
+| Promoter firing outward | 3.0 | Transcribes past the att site into whatever the register controls. Downstream this is indistinguishable from the memory having been written. |
+| Promoter firing inward | 1.5 | Runs antisense to the integrase and puts two polymerases head to head. |
+| Terminator, outward | 1.5 | Truncates the intended transcript. |
+| Repeats, homopolymers | 1.0 / 0.5 | Real problems, but identical in both orientations — they raise the absolute risk and cannot discriminate. |
+
+Inverting the payload does not change which hazards it contains. It changes the
+direction each one fires in, and since the construct is not symmetric about the
+register, the two orientations are not equally safe. **That is the entire
+mechanism by which sequence decides orientation**, and an earlier version of
+this scan got it wrong: scanning both strands of each orientation made the
+analysis orientation-blind, and the two sides scored identically every time.
+
+The threshold for declaring a preference is set at 1.5 — roughly one strong
+cryptic promoter — because a permissive scan finds a weak hit in almost any few
+hundred bases of random sequence, and calling an orientation on that would be
+reporting noise back to the user as a decision.
+
+## Provenance, again
+
+The same rule as the compiler, for the same reason. Promoters, RBSs, terminators
+and att sites are literal; the integrase coding sequence is a placeholder
+carrying its ID and length.
+
+Att sites sit awkwardly between the two categories and get a warning of their
+own. They are short enough to include and short enough to check, but their
+central dinucleotide *is* the mechanism of directionality — a single wrong base
+there does not break the construct loudly, it builds a recombinase that writes
+in both directions, which is not a memory at all.
+
+## Refusals
+
+Asking for a design in yeast returns an error, not a sequence. Every promoter,
+RBS and terminator in this library is bacterial: a eukaryotic polymerase does
+not read a sigma-70 promoter, a eukaryotic ribosome does not use a
+Shine-Dalgarno sequence, and the recombinase would need a nuclear localisation
+signal it does not carry. A construct that looks buildable and cannot work is
+worse than no construct, and the refusal teaches something true about part
+portability that a silent success would hide.
+
+The same applies to a sensor that has not been characterised in the chosen host.
+A promoter nobody has measured in your organism is a parameter you do not have,
+not a parameter equal to the one you do.
+
+## Limitations
+
+- **Deterministic.** No cell-to-cell variation, so the model cannot report what
+  fraction of a population ends up in each state — only what the average does.
+- **Fixed integration step.** RK4 at a quarter-minute step; adequate for these
+  timescales and not a stiff solver.
+- **Ribosome and polymerase load are not modelled**, so the burden term is a
+  count of transcriptional units rather than a measured growth cost.
+- **No mutation or selection.** Over many generations a burdensome construct is
+  selected against, and neither architecture models it.
+- **Illustrative parameters.** Rate constants and leakiness are order-of-magnitude
+  literature values, not measurements of anyone's parts.
