@@ -20,6 +20,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeaders::class,
         ]);
+
+        // Route model binding runs before unprioritised route middleware, so a
+        // stale /en/result/{id} would 404 before the language was known and the
+        // not-found page would come back in the wrong one. The language is a
+        // property of the URL, not of what the URL resolves to, so settle it
+        // first.
+        $middleware->prependToPriorityList(
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\SetLocale::class,
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

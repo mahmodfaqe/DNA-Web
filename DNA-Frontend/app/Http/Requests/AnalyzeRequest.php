@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\File;
 
 class AnalyzeRequest extends FormRequest
 {
@@ -12,13 +11,23 @@ class AnalyzeRequest extends FormRequest
         return true;
     }
 
+    /**
+     * The accepted formats are decided by the file name, not by its detected
+     * MIME type. `.fasta`, `.fa` and `.fna` have no registered MIME type, so a
+     * content sniff reports them as plain text at best and as
+     * application/octet-stream at worst — `mimes:` compares the *guessed*
+     * extension and rejects the very files this form exists to accept. The
+     * sequence itself is validated by the backend parser, which is the only
+     * thing that can tell a real FASTA record from a text file.
+     */
     public function rules(): array
     {
         return [
             'fasta_file' => [
                 'required',
-                File::types(['fasta', 'fa', 'fna', 'txt'])
-                    ->max((int) config('services.backend.max_upload_kb', 10240)),
+                'file',
+                'extensions:fasta,fa,fna,txt',
+                'max:' . (int) config('services.backend.max_upload_kb', 10240),
             ],
         ];
     }
@@ -31,8 +40,6 @@ class AnalyzeRequest extends FormRequest
                 'megabytes' => round(((int) config('services.backend.max_upload_kb', 10240)) / 1024, 1),
             ]),
             'fasta_file.extensions' => __('errors.validation.extensions'),
-            'fasta_file.mimes' => __('errors.validation.extensions'),
-            'fasta_file.mimetypes' => __('errors.validation.extensions'),
         ];
     }
 

@@ -9,7 +9,7 @@ use App\Services\DnaBackendClient;
 use App\Support\ErrorTranslator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CompilerController extends Controller
 {
@@ -50,14 +50,19 @@ class CompilerController extends Controller
         return view('compiler.show', ['circuit' => $circuit]);
     }
 
-    public function fasta(Circuit $circuit): Response
+    /**
+     * Streamed for the same reason the CSV export is: the compiled construct
+     * is handed straight to the browser rather than held in memory first.
+     */
+    public function fasta(Circuit $circuit): StreamedResponse
     {
         abort_unless($circuit->succeeded, 404);
 
-        return response($circuit->fasta(), 200, [
-            'Content-Type' => 'text/plain; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="circuit-' . $circuit->id . '.fasta"',
-        ]);
+        return response()->streamDownload(
+            fn () => print $circuit->fasta(),
+            'circuit-' . $circuit->id . '.fasta',
+            ['Content-Type' => 'text/plain; charset=UTF-8'],
+        );
     }
 
     public function json(Circuit $circuit): JsonResponse
