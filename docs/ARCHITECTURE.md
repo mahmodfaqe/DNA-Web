@@ -232,3 +232,159 @@ a sequence and trusts it.
   connective.
 - **Output is a teaching draft, not an order-ready construct.** Every compile
   says so, in the interface and in the FASTA header.
+
+---
+
+# BioNoise-Sim (third tab)
+
+A population of cells, simulated one reaction at a time:
+
+```
+preset network + conditions
+  → reaction network            promoter OFF/ON, mRNA, protein, per gene
+  → Gillespie SSA, N cells      exact sample from the chemical master equation
+  → control ensemble            same seeds, couplings removed
+  → statistics                  Fano, CV, noise budget, crosstalk attribution
+  → trajectories + distributions + diagnostics
+```
+
+## Why an exact stochastic simulation rather than rate equations
+
+A differential equation describes a flask. In a cell a promoter is one molecule
+and an mRNA is present in single copies, so "0.4 transcripts" is not a state the
+system can occupy — the count is 0 or 1, and which one it is at a given moment is
+precisely what makes two genetically identical cells behave differently.
+
+Gillespie's direct method draws which reaction fires next and when, from the
+exact distributions the propensities imply. The trajectory it produces is a
+statistically exact sample from the chemical master equation, not an
+approximation of its mean. Everything the tab exists to show — bursts, spread
+across a population, a memory circuit flipping on its own — is invisible to a
+model that only tracks averages.
+
+## Two-state promoters are not an embellishment
+
+A promoter that is simply "on at rate k" produces Poisson mRNA and far less
+protein variability than real bacteria show. Switching between OFF and ON
+produces **bursts**, and bursting is the dominant measured source of expression
+noise. A simulator without it would report a cell much quieter than any cell on
+a microscope, which is a comfortable and useless answer.
+
+## Cell-to-cell variability is a separate axis
+
+Each simulated cell draws its own translation capacity once and keeps it, from a
+gamma with mean 1. It stands for ribosome content, cell size and growth rate —
+things that differ between cells and stay different for about a generation, far
+longer than any reaction in the model.
+
+Without it, two identical reporters come out with almost no extrinsic noise,
+which is the opposite of what the dual-reporter experiments measured. The tab
+would then teach precisely the wrong lesson.
+
+## The control ensemble
+
+Where a network contains any coupling, the same cells are simulated a second time
+with the crosstalk and the shared ribosome pool removed and **nothing else
+changed** — cell *k* gets seed `seed + k` in both runs, so the two ensembles
+differ in the couplings and not in the random numbers.
+
+Subtracting one from the other is what turns "this gene is noisy" into "this much
+of the noise is other genes". It costs a second ensemble, so it is skipped
+entirely when the network has nothing to isolate.
+
+## Crosstalk is attributed, not inferred
+
+Every time a promoter opens, the simulator records what share of the *positive*
+drive that opened it came from a foreign signal, and the transcripts made during
+that open interval inherit the share. Repressive terms are excluded: a repressor
+does not cause the transcripts that happen anyway.
+
+This is exact inside the model, which matters because the obvious alternative —
+reading crosstalk off a correlation — is unreliable in both directions. Constant
+crosstalk raises a gene's output without correlating its fluctuations, and
+unconnected genes correlate strongly for reasons that have nothing to do with
+crosstalk.
+
+## Two correlation matrices, and why both
+
+| Matrix | What it is | What it is for |
+|---|---|---|
+| Measured | Pearson correlation of deviations from the ensemble mean at each moment | What a microscope reports |
+| Partial | The same, after regressing out each cell's own translation capacity | What the wiring and the competition actually did |
+
+On the `independent` preset — two genes with no link, no shared inducer and
+ribosomes to spare — the measured correlation runs around **+0.6** and the
+partial around **0**. Reading the first as evidence of a regulatory connection is
+one of the easiest mistakes to make with single-cell data, and showing both
+numbers side by side is the most direct way to inoculate against it.
+
+Deviations are taken from the ensemble mean *at each time point* rather than from
+the pooled mean. A population still settling would otherwise have its shared
+drift counted as correlation between genes that are not correlated at all.
+
+## The noise budget
+
+Noise expressed as CV² is additive across independent sources, which is the only
+reason the bar can be drawn. Two terms are theory and two are measurement, and
+the interface labels which is which:
+
+| Term | Source |
+|---|---|
+| `floor` | 1/⟨p⟩, the Poisson limit of counting molecules |
+| `bursting` | analytic two-stage excess, `b/(1 + d_p/d_m)` over ⟨p⟩ |
+| `extrinsic` | the declared cell-to-cell CV, squared |
+| `promoter` | whatever the isolated gene still shows beyond those three |
+| `coupling` | full ensemble minus control ensemble |
+
+`coupling` is **signed**. Coupling that acts as negative feedback reduces noise,
+and clamping that to zero would hide one of the more useful things a student can
+see.
+
+## Reporting precision, not just numbers
+
+The number of samples is not the number of measurements. A protein with a
+half-life of half an hour is barely changed a second later, so sampling one cell
+densely produces many numbers and little extra information. Independent
+observations accumulate at roughly one per two protein lifetimes per cell, and
+never fewer than one per cell.
+
+Every result therefore carries the relative error on its noise figures
+(`√(2/n_eff)`), and the steady-state check compares the observed drift against
+what sampling alone would produce rather than against a fixed percentage — a
+noisy gene measured in few cells looks like it is drifting when it is not.
+
+## Validating a simulator that has no expected output
+
+Every run is different on purpose, so the suite is built on what can be pinned
+down:
+
+- **Theory.** With `leak = 1.0` transcription no longer depends on the promoter
+  state, which reduces the model to the two-stage system that has been solved
+  exactly: mRNA must be Poisson (Fano 1) and protein Fano must equal
+  `1 + b/(1 + d_p/d_m)`. Both are asserted directly.
+- **Direction.** A bursty promoter must come out *above* that constitutive
+  prediction, never below; turning crosstalk up must move transcripts onto the
+  wrong gene; competition must show as negative partial correlation.
+- **Invariance.** The same seed reproduces a run exactly; a knob at zero has no
+  effect.
+- **Refusal.** Bad input produces a diagnostic rather than a plausible number.
+
+## Limitations
+
+Attached to every result as diagnostics rather than left in this file, because a
+simulator whose assumptions live only in the documentation is a simulator whose
+assumptions nobody reads.
+
+- **One well-mixed compartment.** Molecules have no position, nothing diffuses,
+  nothing is membrane-bound or localised at a pole.
+- **No growth or division.** Dilution is folded into the protein decay rate, so
+  there is no cell cycle and no partitioning of molecules between daughters —
+  itself a real source of noise this model does not have.
+- **Illustrative parameters.** Order-of-magnitude values for *E. coli* in
+  exponential growth, not measurements of anyone's construct.
+- **Ribosome competition only.** RNA polymerase is not modelled as a shared
+  resource; with two or three genes it is the smaller effect, and modelling one
+  shared pool honestly is better than modelling two badly.
+- **Cost is in reaction events, not input size.** A hundred cells watched for
+  four hours is millions of them, so the ensemble runs against a step budget and
+  a run that exhausts it stops and says so rather than holding the worker.

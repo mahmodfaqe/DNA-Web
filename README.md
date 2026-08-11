@@ -12,7 +12,7 @@ missense or nonsense.
 
 ---
 
-## Two tools
+## Three tools
 
 **Sequence analysis** — upload a FASTA file, get composition, thermodynamics,
 reading frames and an aligned comparison.
@@ -34,6 +34,27 @@ gates, the parts list and the assembled DNA:
 
 The same sentence in Kurdish, Arabic or English compiles to byte-identical DNA.
 
+**BioNoise-Sim** — the circuit above assumes a cell behaves like a flask. It does
+not. This simulates the actual chemistry, one reaction at a time, across a
+population of cells:
+
+```
+"Signal and bystander" — 60 cells, 60 minutes
+
+  Gene A  induced on purpose      611 copies   CV 23%
+  Gene B  not meant to respond    328 copies   CV 28%
+
+  → 78% of gene B's transcripts came from a promoter
+    that gene A's signal opened
+  → correlation A:B measured +0.50 … +0.06 once cell-to-cell
+    variability is divided out
+  → noise: 4% counting molecules, 30% bursting, 66% the cell
+```
+
+Two genes with no connection at all still correlate around +0.6, because a cell
+rich in ribosomes makes more of both. Showing that number next to the one with
+the shared factor removed is the point of the tab.
+
 ## Architecture
 
 ```
@@ -45,7 +66,7 @@ browser ──► DNA-Frontend (Laravel 13, Apache) ──► DNA-Backend (FastA
 | Service | Role | Exposed |
 |---|---|---|
 | `frontend` | Interface, localisation, result storage, exports | `:8080` |
-| `backend` | Sequence analysis and variant calling | internal only |
+| `backend` | Sequence analysis, circuit compilation, stochastic simulation | internal only |
 | `db` | Stored analyses | internal only |
 
 The backend is a pure computation service. It never returns human-readable prose
@@ -92,7 +113,7 @@ DNA-Backend/data/mutation_demo.fasta  substitution, frameshift and in-frame dele
 # Analysis service
 cd DNA-Backend
 pip install -r requirements-dev.txt
-pytest                                # 54 tests
+pytest                                # 102 tests
 
 # Web application
 cd DNA-Frontend
@@ -103,6 +124,12 @@ php artisan test
 The backend suite includes a regression test for the variant-calling bug
 described in [docs/ASSESSMENT.ku.md](docs/ASSESSMENT.ku.md): a single inserted base
 used to be reported as dozens of false substitutions.
+
+The simulator is checked against theory rather than against itself. With
+transcription made independent of the promoter state, the model reduces to a
+system with a closed-form solution, and the suite asserts that mRNA comes out
+Poisson and that the protein Fano factor equals `1 + b/(1 + d_p/d_m)`. A bursty
+promoter then has to measure *above* that figure, never below.
 
 ## Configuration
 
@@ -116,6 +143,8 @@ Everything is set through `.env`. The values worth knowing:
 | `MAX_RECORDS` | `500` | Records allowed per file |
 | `ALIGN_MAX_BP` | `3000` | Above this, comparison falls back to a positional diff |
 | `RATE_LIMIT_PER_MINUTE` | `30` | Analyses per client per minute |
+| `SIM_MAX_STEPS` | `6000000` | Reaction events one simulation may spend |
+| `BACKEND_SIMULATION_TIMEOUT` | `180` | Seconds the frontend waits for a simulation |
 | `CORS_ORIGINS` | `http://localhost:8080` | Set to your real domain in production |
 
 Keep `MAX_FILE_SIZE` and `MAX_UPLOAD_KB` consistent, or a file will pass one
@@ -130,6 +159,8 @@ The analysis service documents itself at `/docs` when reachable.
 | `GET /health` | Liveness, version, in-memory job count |
 | `POST /api/v1/analyze` | Analyse a FASTA file, returns the full result |
 | `POST /api/v1/compile` | Compile a description into a circuit |
+| `POST /api/v1/simulate` | Run a stochastic simulation, returns the full result |
+| `GET /api/v1/simulate/presets` | The networks the simulator can run |
 | `POST /api/v1/analyze-async` | Queue an analysis, returns a `job_id` |
 | `GET /api/v1/job/{job_id}` | Poll an async job |
 
@@ -148,7 +179,8 @@ Uploaded sequences are research material, so results are not kept indefinitely:
 docker compose exec frontend php artisan analyses:prune --days=30
 ```
 
-This runs daily through the scheduler. Adjust the window to whatever policy your
+This covers stored analyses, compiled circuits and simulation runs alike, and
+runs daily through the scheduler. Adjust the window to whatever policy your
 department settles on.
 
 ## Backups
@@ -167,6 +199,16 @@ docker compose exec -T db mysql -u root -p dna_db < dna_db_backup.sql
 - [ ] `APP_URL` set to the public URL, over HTTPS
 - [ ] TLS terminated by a reverse proxy in front of `frontend`
 - [ ] A retention window agreed with whoever owns the data
+
+## A note on the simulator's output
+
+The parameters are order-of-magnitude figures for *E. coli* in exponential
+growth, not measurements of your construct. The cell is one well-mixed
+compartment: nothing diffuses, nothing is membrane-bound, and cells neither grow
+nor divide — dilution is folded into the protein decay rate.
+
+Use it to understand which effects matter and how they behave. Do not use it to
+predict what your plasmid will do. Every result says as much, on the page.
 
 ## A note on the compiler's output
 
