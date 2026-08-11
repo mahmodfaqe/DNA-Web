@@ -2779,3 +2779,12 @@ Did you mean one of these?
 [2026-08-11 23:03:11] testing.ERROR: Compiler backend unreachable {"request_id":"8083f41a-9457-44ff-a6a6-42708e38f379","message":"down"} 
 [2026-08-11 23:03:11] testing.ERROR: Memory design backend unreachable {"request_id":"bd5fbfe0-2a42-4c62-9652-741e77bd86de","message":"down"} 
 [2026-08-11 23:03:12] testing.ERROR: Simulation backend unreachable {"request_id":"730b8b9a-c15f-4ad3-8934-2a545033102f","message":"down"} 
+[2026-08-11 23:04:51] testing.WARNING: Analysis backend rejected a request {"request_id":"4109faab-aa18-429d-855b-e9a53c16acbd","status":400,"code":"sequence_invalid_chars"} 
+[2026-08-11 23:04:51] testing.WARNING: Analysis backend rejected a request {"request_id":"d0c57931-9f45-4f20-a51b-41e61f538af1","status":400,"code":"sequence_invalid_chars"} 
+[2026-08-11 23:04:51] testing.WARNING: Analysis backend rejected a request {"request_id":"06781c0c-6286-4381-9994-13dbb36641cf","status":400,"code":"sequence_invalid_chars"} 
+[2026-08-11 23:04:51] testing.WARNING: Analysis backend rejected a request {"request_id":"d21c3252-a2e9-47ca-9d5a-f1a8dfcaec62","status":400,"code":"something_new"} 
+[2026-08-11 23:04:51] testing.WARNING: Untranslated backend error code {"code":"something_new"} 
+[2026-08-11 23:04:51] testing.ERROR: Analysis backend unreachable {"request_id":"8fb7b54d-9476-418b-8a3d-c9836453c5d9","message":"down"} 
+[2026-08-11 23:04:52] testing.ERROR: Compiler backend unreachable {"request_id":"299da293-a8bb-4e35-ab88-f4d95308cf87","message":"down"} 
+[2026-08-11 23:04:52] testing.ERROR: Memory design backend unreachable {"request_id":"5d147d2d-987a-4ea5-904d-8a26dbff3188","message":"down"} 
+[2026-08-11 23:04:52] testing.ERROR: Simulation backend unreachable {"request_id":"e6a8035b-b1ed-4187-8b6a-805baa529b55","message":"down"} 
