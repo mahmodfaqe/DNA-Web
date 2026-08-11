@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AnalysisController;
 use App\Http\Controllers\CompilerController;
+use App\Http\Controllers\MemoryController;
 use App\Http\Controllers\SimulatorController;
 use App\Http\Middleware\SetLocale;
 use App\Support\Locales;
@@ -51,4 +52,14 @@ Route::prefix('{locale}')
         Route::get('/simulation/{simulation}', [SimulatorController::class, 'show'])->name('simulator.show');
         Route::get('/simulation/{simulation}/export.csv', [SimulatorController::class, 'csv'])->name('simulator.csv');
         Route::get('/simulation/{simulation}/export.json', [SimulatorController::class, 'json'])->name('simulator.json');
+
+        // Fourth tab: choose a memory architecture, and build it.
+        Route::get('/memory', [MemoryController::class, 'index'])->name('memory.index');
+        Route::post('/memory', [MemoryController::class, 'store'])
+            ->middleware('throttle:20,1')
+            ->name('memory.store');
+
+        Route::get('/design/{design}', [MemoryController::class, 'show'])->name('memory.show');
+        Route::get('/design/{design}/memory.fasta', [MemoryController::class, 'fasta'])->name('memory.fasta');
+        Route::get('/design/{design}/export.json', [MemoryController::class, 'json'])->name('memory.json');
     });

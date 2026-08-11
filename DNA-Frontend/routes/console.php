@@ -2,6 +2,7 @@
 
 use App\Models\Analysis;
 use App\Models\Circuit;
+use App\Models\MemoryDesign;
 use App\Models\Simulation;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -22,11 +23,12 @@ Artisan::command('analyses:prune {--days=30}', function () {
     $analyses = Analysis::where('created_at', '<', $cutoff)->delete();
     $circuits = Circuit::where('created_at', '<', $cutoff)->delete();
     $simulations = Simulation::where('created_at', '<', $cutoff)->delete();
+    $designs = MemoryDesign::where('created_at', '<', $cutoff)->delete();
 
     $this->info(
-        "Removed {$analyses} analyses, {$circuits} circuits and {$simulations} simulations "
-        . "older than {$days} days."
+        "Removed {$analyses} analyses, {$circuits} circuits, {$simulations} simulations "
+        . "and {$designs} memory designs older than {$days} days."
     );
-})->purpose('Delete stored analyses, circuits and simulations past the retention window');
+})->purpose('Delete stored results past the retention window');
 
 Schedule::command('analyses:prune')->daily();

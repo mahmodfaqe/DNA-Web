@@ -11,6 +11,12 @@
         'tag' => 'var(--color-ink-500)',
         'scar' => 'var(--color-line-strong)',
         'spacer' => 'var(--color-line-strong)',
+        // Added for the memory designer. The att sites take the darkest brand
+        // step because they are the boundary of the register — the two points
+        // the whole construct is built around — and the payload between them
+        // is neutral ink, since what it contains is the user's business.
+        'att' => 'var(--color-brand-700)',
+        'payload' => 'var(--color-ink-700)',
     ];
 @endphp
 

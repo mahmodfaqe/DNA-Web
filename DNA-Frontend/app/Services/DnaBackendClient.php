@@ -134,6 +134,38 @@ class DnaBackendClient
         throw $this->toException($response, $requestId);
     }
 
+    /**
+     * Compare genetic memory architectures and get the DNA for the better one.
+     *
+     * Shares the simulation timeout: the work is an ODE integration and a
+     * sequence scan rather than a file parse, and both are measured in seconds
+     * of CPU rather than in bytes of input.
+     */
+    public function memory(array $parameters): array
+    {
+        $requestId = (string) Str::uuid();
+
+        try {
+            $response = Http::withHeaders(['X-Request-ID' => $requestId])
+                ->connectTimeout($this->connectTimeout)
+                ->timeout($this->simulationTimeout)
+                ->post($this->baseUrl . '/api/v1/memory', $parameters);
+        } catch (ConnectionException $exception) {
+            Log::error('Memory design backend unreachable', [
+                'request_id' => $requestId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw new BackendException('backend_unreachable', [], 503);
+        }
+
+        if ($response->successful()) {
+            return $response->json();
+        }
+
+        throw $this->toException($response, $requestId);
+    }
+
     public function health(): array
     {
         try {

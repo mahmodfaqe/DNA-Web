@@ -1,9 +1,10 @@
 @props(['active'])
 
-{{-- Three tabs, all always visible: the tools share a subject and a user, and
+{{-- Four tabs, all always visible: the tools share a subject and a user, and
      hiding one behind a menu would hide that they belong together. They are
-     ordered as the work is: read a sequence, design a circuit, then find out
-     what the circuit does in a cell that is not a test tube.
+     ordered as the work is: read a sequence, design a circuit, find out what
+     that circuit does in a cell that is not a test tube, and then commit the
+     result to something the cell will still be carrying tomorrow.
 
      The row scrolls rather than wraps on a narrow screen, so the tabs stay one
      line and never reflow into something that reads like two navigations. --}}
@@ -14,6 +15,7 @@
                 ['route' => 'analysis.index', 'key' => 'analysis', 'label' => __('compiler.nav.analysis')],
                 ['route' => 'compiler.index', 'key' => 'compiler', 'label' => __('compiler.nav.compiler')],
                 ['route' => 'simulator.index', 'key' => 'simulator', 'label' => __('compiler.nav.simulator')],
+                ['route' => 'memory.index', 'key' => 'memory', 'label' => __('compiler.nav.memory')],
             ];
         @endphp
 

@@ -145,6 +145,11 @@ def find_promoters(sequence: str, strand: str = "+") -> list[Finding]:
         if score_35 < 3:
             continue
 
+        # Every allowed spacing is tried and the best kept. Stopping at the
+        # first one over the threshold reports a real promoter at the wrong
+        # spacing and the wrong strength, because a weak -10 nearer the -35
+        # gets found before the strong one further along.
+        best: Finding | None = None
         for spacer in range(low, high + 1):
             second_start = start + 6 + spacer
             second = sequence[second_start:second_start + 6]
@@ -153,16 +158,21 @@ def find_promoters(sequence: str, strand: str = "+") -> list[Finding]:
 
             score_10 = _matches(second, MINUS_10)
             total = score_35 + score_10
-            if total >= PROMOTER_THRESHOLD and score_10 >= 4:
-                found.append(Finding(
+            if total < PROMOTER_THRESHOLD or score_10 < 4:
+                continue
+
+            if best is None or total / 12.0 > best.score:
+                best = Finding(
                     kind="promoter",
                     start=start + 1,
                     end=second_start + 6,
                     strand=strand,
                     score=total / 12.0,
                     detail=f"{first}-N{spacer}-{second}",
-                ))
-                break  # one promoter per -35, at its best spacing
+                )
+
+        if best is not None:
+            found.append(best)
 
     return found
 
