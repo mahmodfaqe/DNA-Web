@@ -15,13 +15,14 @@ services:
       RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-30}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8000/ || exit 1" ]
+      test: [ "CMD-SHELL", "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/\")' || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+
     networks: [ internal ]
-    
+
   db:
     image: mysql:8.0
     container_name: dna_mysql
