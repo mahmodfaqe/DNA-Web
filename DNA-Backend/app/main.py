@@ -25,7 +25,7 @@ from fastapi.responses import JSONResponse
 from .config import settings
 from .errors import AnalysisError, ErrorCode
 from .jobs import store
-from .services import biocompiler, bionoise, fasta
+from .services import biocompiler, bionoise, fasta, memory
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level, logging.INFO),
@@ -227,6 +227,31 @@ def simulate(request: dict[str, Any] = Body(...)) -> dict[str, Any]:
 async def simulation_presets() -> dict[str, Any]:
     """The networks this service can simulate, for a UI building its own form."""
     return {"presets": list(bionoise.PRESETS)}
+
+
+@app.post("/api/v1/memory", tags=["memory"], dependencies=[Depends(rate_limit)])
+def design_memory(request: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    """Compare genetic memory architectures and emit the DNA for the better one.
+
+    Sync rather than async for the same reason as the simulator: the ODE
+    integration and the sequence scan are CPU-bound with nothing to await, so
+    FastAPI's worker thread keeps the rest of the service responsive.
+
+    A design the user will not like is still a 200. Only a request the tool
+    cannot honour — an unknown signal, or a host this parts library does not
+    serve — comes back with `ok: false` and a diagnostic naming the reason.
+    """
+    return memory.design(request)
+
+
+@app.get("/api/v1/memory/options", tags=["memory"])
+async def memory_options() -> dict[str, Any]:
+    """Signals, hosts and recombinases this service can design for."""
+    return {
+        "signals": list(memory.SIGNALS),
+        "chassis": list(memory.CHASSIS),
+        "recombinases": list(memory.RECOMBINASES),
+    }
 
 
 @app.get("/api/v1/job/{job_id}", tags=["analysis"])

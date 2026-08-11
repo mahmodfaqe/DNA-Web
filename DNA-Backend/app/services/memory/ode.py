@@ -285,7 +285,13 @@ def toggle_outcome(
         # The signal relieves repression of A — the standard way a toggle is
         # set, and the reason the write is fast: it does not have to build a
         # protein from nothing, it has to stop one being destroyed.
-        push = alpha if present else 0.0
+        #
+        # With the signal gone the input does not fall silent, it falls to the
+        # promoter's leak. That has to be modelled here or the comparison is
+        # rigged: the recombinase is charged for the same leak, and a toggle
+        # that is assumed to receive exactly zero input when uninduced would
+        # win on fidelity by assumption rather than by biology.
+        push = alpha if present else alpha * leak
 
         def inner(_time: float, state: list[float]) -> list[float]:
             a, b = state
@@ -325,6 +331,16 @@ def toggle_outcome(
         barrier, architecture.burst_size, architecture.burst_frequency
     ) if bistable and retained else 0.0
 
+    # False writing, measured the same way it is for the recombinase: start a
+    # population that was never signalled, give it nothing but the promoter's
+    # leak, and see whether it sets itself inside the holding window. A toggle
+    # driven hard enough by leak alone crosses the barrier and latches — and
+    # once latched it stays, which is exactly the failure the DNA-based memory
+    # is accused of.
+    _, unsignalled, _ = integrate(derivative(False), [0.0, resting], 0.0, hold_minutes)
+    falsely_set = unsignalled[0] > unsignalled[1]
+    false_rate = (math.log(2) / (hold_minutes / 60.0)) if falsely_set else 0.0
+
     return Outcome(
         architecture=architecture.id,
         written=written,
@@ -332,7 +348,7 @@ def toggle_outcome(
         retained_fraction=1.0 if retained else 0.0,
         write_minutes_to_half=_crossover(write_path),
         retention_half_life_hours=escape_hours if bistable else 0.0,
-        false_write_per_hour=0.0 if bistable else 1.0,
+        false_write_per_hour=false_rate if bistable else 1.0,
         generations_held=hold_minutes / chassis.doubling_minutes,
         burden_units=architecture.units,
         reversible=True,
@@ -348,6 +364,7 @@ def toggle_outcome(
             "burst_size": architecture.burst_size,
             "final_set": round(final[0], 1),
             "final_reset": round(final[1], 1),
+            "falsely_set_by_leak": falsely_set,
         },
     )
 
