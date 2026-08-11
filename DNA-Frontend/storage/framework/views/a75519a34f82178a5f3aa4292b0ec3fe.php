@@ -36,6 +36,7 @@ unset($__defined_vars, $__key, $__value); ?>
                 ['route' => 'analysis.index', 'key' => 'analysis', 'label' => __('compiler.nav.analysis')],
                 ['route' => 'compiler.index', 'key' => 'compiler', 'label' => __('compiler.nav.compiler')],
                 ['route' => 'simulator.index', 'key' => 'simulator', 'label' => __('compiler.nav.simulator')],
+                ['route' => 'memory.index', 'key' => 'memory', 'label' => __('compiler.nav.memory')],
             ];
         ?>
 

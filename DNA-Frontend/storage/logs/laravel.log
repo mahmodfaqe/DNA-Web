@@ -1294,3 +1294,4 @@ Did you mean one of these?
 #65 {main}
 "} 
 [2026-08-11 18:30:22] testing.ERROR: Simulation backend unreachable {"request_id":"8c512ad9-385f-4cd8-b97c-0312c13613bb","message":"down"} 
+[2026-08-11 19:27:02] testing.ERROR: Memory design backend unreachable {"request_id":"fae7c51b-d0e7-431a-91aa-1605894947a3","message":"down"} 

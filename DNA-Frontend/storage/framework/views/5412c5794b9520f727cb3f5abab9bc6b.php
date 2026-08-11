@@ -23,6 +23,7 @@
     data-label-no-protein="<?php echo e(__('analysis.orf.protein_empty')); ?>"
     data-label-compiling="<?php echo e(__('compiler.hero.submitting')); ?>"
     data-label-simulating="<?php echo e(__('simulator.form.submitting')); ?>"
+    data-label-modelling="<?php echo e(__('memory.form.submitting')); ?>"
 >
 <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:shadow">
     <?php echo e(__('common.nav.skip_to_content')); ?>
