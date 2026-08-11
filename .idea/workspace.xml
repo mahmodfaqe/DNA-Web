@@ -4,7 +4,23 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6d2f59c6-acf3-405f-9a48-cb7996334142" name="Changes" comment="update" />
+    <list default="true" id="6d2f59c6-acf3-405f-9a48-cb7996334142" name="Changes" comment="update">
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/app/Http/Controllers/CompilerController.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/app/Http/Controllers/CompilerController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/app/Http/Middleware/SetLocale.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/app/Http/Middleware/SetLocale.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/app/Services/DnaBackendClient.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/app/Services/DnaBackendClient.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/bootstrap/app.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/bootstrap/app.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/config/cache.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/config/cache.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/config/database.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/config/database.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/config/filesystems.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/config/filesystems.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/config/logging.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/config/logging.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/config/session.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/config/session.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/lang/en/compiler.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/lang/en/compiler.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/public/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/public/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/tests/Feature/AnalysisTest.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/tests/Feature/AnalysisTest.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/tests/Feature/CompilerTest.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/tests/Feature/CompilerTest.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/tests/Feature/MemoryTest.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/tests/Feature/MemoryTest.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DNA-Frontend/tests/Feature/SimulatorTest.php" beforeDir="false" afterPath="$PROJECT_DIR$/DNA-Frontend/tests/Feature/SimulatorTest.php" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,6 +38,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -183,7 +200,7 @@
       <workItem from="1786322707589" duration="46000" />
       <workItem from="1786322783937" duration="115000" />
       <workItem from="1786322938795" duration="7372000" />
-      <workItem from="1786463405450" duration="7503000" />
+      <workItem from="1786463405450" duration="9097000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <option name="closed" value="true" />
@@ -329,7 +346,55 @@
       <option name="project" value="LOCAL" />
       <updated>1786477387248</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="update">
+      <option name="closed" value="true" />
+      <created>1786477565800</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1786477565800</updated>
+    </task>
+    <task id="LOCAL-00020" summary="update">
+      <option name="closed" value="true" />
+      <created>1786488312916</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1786488312916</updated>
+    </task>
+    <task id="LOCAL-00021" summary="update">
+      <option name="closed" value="true" />
+      <created>1786488704663</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1786488704663</updated>
+    </task>
+    <task id="LOCAL-00022" summary="update">
+      <option name="closed" value="true" />
+      <created>1786489474988</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1786489474988</updated>
+    </task>
+    <task id="LOCAL-00023" summary="update">
+      <option name="closed" value="true" />
+      <created>1786489535353</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1786489535353</updated>
+    </task>
+    <task id="LOCAL-00024" summary="update">
+      <option name="closed" value="true" />
+      <created>1786490743736</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1786490743736</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

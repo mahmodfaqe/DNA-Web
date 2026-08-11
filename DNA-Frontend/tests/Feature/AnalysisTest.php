@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Analysis;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AnalysisTest extends TestCase
@@ -160,7 +162,7 @@ class AnalysisTest extends TestCase
 
     public function test_an_unreachable_backend_produces_a_readable_message(): void
     {
-        Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('down'));
+        Http::fake(fn () => throw new ConnectionException('down'));
 
         $this->post('/en/analyze', ['fasta_file' => $this->fasta()])
             ->assertSessionHasErrors(['fasta_file' => trans('errors.backend.backend_unreachable', [], 'en')]);
@@ -199,7 +201,7 @@ class AnalysisTest extends TestCase
 
     public function test_an_expired_result_id_returns_a_translated_404(): void
     {
-        $this->get('/ku/result/' . \Illuminate\Support\Str::uuid())
+        $this->get('/ku/result/' . Str::uuid())
             ->assertNotFound();
     }
 

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Circuit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -169,7 +170,7 @@ class CompilerTest extends TestCase
 
     public function test_an_unreachable_backend_produces_a_readable_message(): void
     {
-        Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('down'));
+        Http::fake(fn () => throw new ConnectionException('down'));
 
         $this->post('/en/compiler', ['description' => 'if lactose then produce green protein'])
             ->assertSessionHasErrors(['description' => trans('errors.backend.backend_unreachable', [], 'en')]);

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Simulation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -36,16 +37,16 @@ class SimulatorTest extends TestCase
                 'preset' => 'crosstalk_pair',
                 'genes' => [
                     ['id' => 'A', 'label' => 'reporter_a', 'k_on' => 0.02, 'k_off' => 0.02,
-                     'k_tx' => 0.05, 'k_tl' => 0.05, 'd_m' => 0.0058, 'd_p' => 0.00035,
-                     'leak' => 0.02, 'basal' => 0.0, 'burst_size' => 8.62,
-                     'protein_half_life_minutes' => 33.0],
+                        'k_tx' => 0.05, 'k_tl' => 0.05, 'd_m' => 0.0058, 'd_p' => 0.00035,
+                        'leak' => 0.02, 'basal' => 0.0, 'burst_size' => 8.62,
+                        'protein_half_life_minutes' => 33.0],
                     ['id' => 'B', 'label' => 'reporter_b', 'k_on' => 0.02, 'k_off' => 0.02,
-                     'k_tx' => 0.05, 'k_tl' => 0.05, 'd_m' => 0.0058, 'd_p' => 0.00035,
-                     'leak' => 0.02, 'basal' => 0.12, 'burst_size' => 8.62,
-                     'protein_half_life_minutes' => 33.0],
+                        'k_tx' => 0.05, 'k_tl' => 0.05, 'd_m' => 0.0058, 'd_p' => 0.00035,
+                        'leak' => 0.02, 'basal' => 0.12, 'burst_size' => 8.62,
+                        'protein_half_life_minutes' => 33.0],
                 ],
                 'links' => [['source' => 'A', 'target' => 'B', 'weight' => 0.6,
-                             'k_half' => 400.0, 'hill' => 1, 'kind' => 'crosstalk']],
+                    'k_half' => 400.0, 'hill' => 1, 'kind' => 'crosstalk']],
                 'inducers' => [['target' => 'A', 'weight' => 1.0, 'kind' => 'cognate']],
                 'ribosome_capacity' => 200.0,
                 'dual_reporters' => null,
@@ -59,9 +60,9 @@ class SimulatorTest extends TestCase
             ],
             'trajectories' => [
                 'A' => ['mean' => [500, 520, 540, 530, 545], 'sd' => [90, 95, 100, 98, 102],
-                        'examples' => [[480, 610, 500, 470, 590]], 'mrna_mean' => [4.2, 4.4, 4.3, 4.5, 4.4]],
+                    'examples' => [[480, 610, 500, 470, 590]], 'mrna_mean' => [4.2, 4.4, 4.3, 4.5, 4.4]],
                 'B' => ['mean' => [300, 310, 325, 318, 330], 'sd' => [70, 74, 80, 78, 82],
-                        'examples' => [[260, 380, 300, 290, 350]], 'mrna_mean' => [2.5, 2.6, 2.6, 2.7, 2.6]],
+                    'examples' => [[260, 380, 300, 290, 350]], 'mrna_mean' => [2.5, 2.6, 2.6, 2.7, 2.6]],
             ],
             'distributions' => [
                 'A' => ['edges' => [300, 400, 500, 600, 700], 'counts' => [10, 40, 60, 30], 'min' => 300, 'max' => 700],
@@ -75,7 +76,7 @@ class SimulatorTest extends TestCase
                     'drift' => 0.01, 'drift_threshold' => 0.12, 'samples' => 3600,
                     'effective_samples' => 60.0, 'precision' => 0.18,
                     'noise_budget' => ['floor' => 0.0019, 'bursting' => 0.0151, 'extrinsic' => 0.04,
-                                       'promoter' => 0.0, 'coupling' => -0.0228, 'total' => 0.0342],
+                        'promoter' => 0.0, 'coupling' => -0.0228, 'total' => 0.0342],
                 ],
                 'B' => [
                     'id' => 'B', 'label' => 'reporter_b', 'mean_protein' => 325.0, 'sd_protein' => 90.0,
@@ -84,7 +85,7 @@ class SimulatorTest extends TestCase
                     'drift' => 0.01, 'drift_threshold' => 0.12, 'samples' => 3600,
                     'effective_samples' => 60.0, 'precision' => 0.18,
                     'noise_budget' => ['floor' => 0.0031, 'bursting' => 0.0248, 'extrinsic' => 0.04,
-                                       'promoter' => 0.089, 'coupling' => -0.0802, 'total' => 0.0767],
+                        'promoter' => 0.089, 'coupling' => -0.0802, 'total' => 0.0767],
                 ],
             ],
             'crosstalk' => [
@@ -105,7 +106,7 @@ class SimulatorTest extends TestCase
             ],
             'diagnostics' => [
                 ['code' => 'crosstalk_dominates', 'severity' => 'warning',
-                 'params' => ['gene' => 'B', 'percent' => 69.0], 'span' => 'B'],
+                    'params' => ['gene' => 'B', 'percent' => 69.0], 'span' => 'B'],
                 ['code' => 'seed_recorded', 'severity' => 'info', 'params' => ['seed' => 4242], 'span' => null],
             ],
             'diagnostic_counts' => ['error' => 0, 'warning' => 1, 'info' => 1],
@@ -287,7 +288,7 @@ class SimulatorTest extends TestCase
 
     public function test_an_unreachable_backend_produces_a_readable_message(): void
     {
-        Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('down'));
+        Http::fake(fn () => throw new ConnectionException('down'));
 
         $this->post('/en/simulator', $this->valid())
             ->assertSessionHasErrors(['preset' => trans('errors.backend.backend_unreachable', [], 'en')]);
@@ -388,7 +389,7 @@ class SimulatorTest extends TestCase
             'ok' => false,
             'diagnostics' => [
                 ['code' => 'unknown_preset', 'severity' => 'error',
-                 'params' => ['preset' => 'nope', 'available' => 'independent'], 'span' => null],
+                    'params' => ['preset' => 'nope', 'available' => 'independent'], 'span' => null],
             ],
             'diagnostic_counts' => ['error' => 1, 'warning' => 0, 'info' => 0],
         ]);

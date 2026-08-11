@@ -13,7 +13,7 @@ return [
         'title' => 'Describe a circuit in a sentence, get the DNA',
         'subtitle' => 'Write the behaviour you want in Kurdish, Arabic or English. The compiler works out the logic gates, picks the genetic parts, assembles the sequence — and tells you which parts of your sentence biology cannot deliver.',
         'label' => 'Describe the behaviour',
-        'placeholder' => "If temperature exceeds 37 and lactose is present, produce green protein for 24 hours then self destruct.",
+        'placeholder' => 'If temperature exceeds 37 and lactose is present, produce green protein for 24 hours then self destruct.',
         'submit' => 'Compile',
         'submitting' => 'Compiling…',
         'examples' => 'Try an example',

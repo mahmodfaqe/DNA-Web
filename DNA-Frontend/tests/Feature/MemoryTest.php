@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\MemoryDesign;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -48,9 +49,9 @@ class MemoryTest extends TestCase
                     'stores_in_dna' => true,
                     'phases' => [
                         ['name' => 'write', 'minutes' => [0, 30, 60],
-                         'series' => ['integrase' => [0, 700, 1288], 'flipped' => [0, 0.6, 0.91]]],
+                            'series' => ['integrase' => [0, 700, 1288], 'flipped' => [0, 0.6, 0.91]]],
                         ['name' => 'hold', 'minutes' => [0, 720, 1440],
-                         'series' => ['integrase' => [1288, 40, 34], 'flipped' => [0.91, 0.98, 0.99]]],
+                            'series' => ['integrase' => [1288, 40, 34], 'flipped' => [0.91, 0.98, 0.99]]],
                     ],
                     'detail' => ['leak_steady_integrase' => 34.11, 'plasmid_loss_per_hour' => 0.0],
                 ],
@@ -62,9 +63,9 @@ class MemoryTest extends TestCase
                     'stores_in_dna' => false,
                     'phases' => [
                         ['name' => 'write', 'minutes' => [0, 30, 60],
-                         'series' => ['set' => [0, 900, 1540], 'reset' => [1708, 300, 50]]],
+                            'series' => ['set' => [0, 900, 1540], 'reset' => [1708, 300, 50]]],
                         ['name' => 'hold', 'minutes' => [0, 720, 1440],
-                         'series' => ['set' => [1540, 1539, 1539], 'reset' => [50, 50, 50]]],
+                            'series' => ['set' => [1540, 1539, 1539], 'reset' => [50, 50, 50]]],
                     ],
                     'detail' => ['bistable' => true, 'barrier' => 276.2, 'burst_size' => 15.0],
                 ],
@@ -74,14 +75,14 @@ class MemoryTest extends TestCase
                     'label' => 'forward', 'length' => 35, 'gc_percent' => 48.6, 'gc_skew' => 0.1,
                     'promoters' => [], 'terminators' => [], 'repeats' => [], 'homopolymers' => [],
                     'counts' => ['promoters' => 1, 'terminators' => 0, 'repeats' => 0,
-                                 'homopolymers' => 0, 'promoters_outward' => 1, 'promoters_inward' => 0],
+                        'homopolymers' => 0, 'promoters_outward' => 1, 'promoters_inward' => 0],
                     'strongest_outward' => 0.917, 'risk' => 2.75,
                 ],
                 'reverse' => [
                     'label' => 'reverse', 'length' => 35, 'gc_percent' => 48.6, 'gc_skew' => -0.1,
                     'promoters' => [], 'terminators' => [], 'repeats' => [], 'homopolymers' => [],
                     'counts' => ['promoters' => 1, 'terminators' => 0, 'repeats' => 0,
-                                 'homopolymers' => 0, 'promoters_outward' => 0, 'promoters_inward' => 1],
+                        'homopolymers' => 0, 'promoters_outward' => 0, 'promoters_inward' => 1],
                     'strongest_outward' => 0.0, 'risk' => 1.375,
                 ],
                 'preferred' => 'reverse', 'difference' => 1.375, 'decided_by_sequence' => false,
@@ -96,30 +97,30 @@ class MemoryTest extends TestCase
                 'sequence' => str_repeat('ATCG', 12) . str_repeat('N', 72),
                 'annotations' => [
                     ['part_id' => 'attB_bxb1', 'name' => 'bxb1 attB', 'role' => 'att',
-                     'provenance' => 'literal', 'direction' => 'forward', 'start' => 1, 'end' => 38, 'length' => 38],
+                        'provenance' => 'literal', 'direction' => 'forward', 'start' => 1, 'end' => 38, 'length' => 38],
                     ['part_id' => 'PAYLOAD', 'name' => 'Invertible cargo', 'role' => 'payload',
-                     'provenance' => 'literal', 'direction' => 'forward', 'start' => 39, 'end' => 48, 'length' => 10],
+                        'provenance' => 'literal', 'direction' => 'forward', 'start' => 39, 'end' => 48, 'length' => 10],
                     ['part_id' => 'BBa_E0040', 'name' => 'GFPmut3b reporter', 'role' => 'cds',
-                     'provenance' => 'placeholder', 'direction' => 'forward', 'start' => 49, 'end' => 120, 'length' => 72],
+                        'provenance' => 'placeholder', 'direction' => 'forward', 'start' => 49, 'end' => 120, 'length' => 72],
                 ],
             ]],
             'parts' => [
                 ['id' => 'attB_bxb1', 'name' => 'bxb1 attB', 'role' => 'att',
-                 'provenance' => 'literal', 'length' => 38, 'registry_url' => null],
+                    'provenance' => 'literal', 'length' => 38, 'registry_url' => null],
                 ['id' => 'BBa_E0040', 'name' => 'GFPmut3b reporter', 'role' => 'cds',
-                 'provenance' => 'placeholder', 'length' => 720,
-                 'registry_url' => 'https://parts.igem.org/Part:BBa_E0040'],
+                    'provenance' => 'placeholder', 'length' => 720,
+                    'registry_url' => 'https://parts.igem.org/Part:BBa_E0040'],
             ],
             'totals' => ['constructs' => 1, 'length' => 120, 'unresolved_bases' => 72,
-                         'resolved_percent' => 40.0],
+                'resolved_percent' => 40.0],
             'synthesis' => ['gc_percent' => 48.6, 'longest_homopolymer' => 0, 'repeat_count' => 0,
-                            'reasons' => [], 'difficult' => false],
+                'reasons' => [], 'difficult' => false],
             'fasta' => "; DeepBio-Memory Architect design\n>register purpose=STORE\nATCGATCG\n",
             'performance' => ['wall_ms' => 54.7],
             'diagnostics' => [
                 ['code' => 'leak_writes_without_signal', 'severity' => 'warning',
-                 'params' => ['architecture' => 'recombinase', 'percent' => 47.8,
-                              'hours' => 24, 'leak' => 2.0], 'span' => 'recombinase'],
+                    'params' => ['architecture' => 'recombinase', 'percent' => 47.8,
+                        'hours' => 24, 'leak' => 2.0], 'span' => 'recombinase'],
                 ['code' => 'not_for_synthesis', 'severity' => 'info', 'params' => [], 'span' => null],
             ],
             'diagnostic_counts' => ['error' => 0, 'warning' => 1, 'info' => 1],
@@ -230,7 +231,7 @@ class MemoryTest extends TestCase
 
     public function test_an_unreachable_backend_produces_a_readable_message(): void
     {
-        Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('down'));
+        Http::fake(fn () => throw new ConnectionException('down'));
 
         $this->post('/en/memory', $this->valid())
             ->assertSessionHasErrors(['signal' => trans('errors.backend.backend_unreachable', [], 'en')]);
@@ -302,11 +303,11 @@ class MemoryTest extends TestCase
     {
         $design = $this->stored(['comparison' => [
             ['architecture' => 'recombinase', 'retention' => 0.99, 'fidelity' => 0.52,
-             'speed' => 0.56, 'cost' => 0.92, 'total' => 0.0, 'false_write_share' => 0.478,
-             'disqualified' => true, 'disqualified_reason' => 'not_reversible'],
+                'speed' => 0.56, 'cost' => 0.92, 'total' => 0.0, 'false_write_share' => 0.478,
+                'disqualified' => true, 'disqualified_reason' => 'not_reversible'],
             ['architecture' => 'toggle', 'retention' => 1.0, 'fidelity' => 1.0, 'speed' => 0.44,
-             'cost' => 0.92, 'total' => 0.9076, 'false_write_share' => 0.0,
-             'disqualified' => false, 'disqualified_reason' => null],
+                'cost' => 0.92, 'total' => 0.9076, 'false_write_share' => 0.0,
+                'disqualified' => false, 'disqualified_reason' => null],
         ]]);
 
         $this->get("/en/design/{$design->id}")
@@ -331,7 +332,7 @@ class MemoryTest extends TestCase
             'ok' => false,
             'diagnostics' => [
                 ['code' => 'chassis_parts_unavailable', 'severity' => 'error',
-                 'params' => ['chassis' => 'yeast'], 'span' => null],
+                    'params' => ['chassis' => 'yeast'], 'span' => null],
             ],
             'diagnostic_counts' => ['error' => 1, 'warning' => 0, 'info' => 0],
         ]);
