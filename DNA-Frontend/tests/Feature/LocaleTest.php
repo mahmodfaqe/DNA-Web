@@ -29,6 +29,28 @@ class LocaleTest extends TestCase
     }
 
     /**
+     * Dates are the one piece of text on the page this app does not translate
+     * itself, and Carbon reads `ku` as Kurmanji in Latin script. A Sorani page
+     * used to say "berî 0 saniye" in the middle of its Arabic-script prose.
+     */
+    public function test_relative_dates_are_written_in_the_script_of_the_page(): void
+    {
+        $analysis = Analysis::create([
+            'filename' => 'sample.fasta',
+            'size_bytes' => 120,
+            'checksum' => 'abc123',
+            'gene_count' => 1,
+            'payload' => $this->payload(),
+        ]);
+
+        $this->get("/ku/result/{$analysis->id}")
+            ->assertOk()
+            ->assertDontSee('berî')
+            ->assertDontSee('saniye')
+            ->assertSee('چرکە', false);
+    }
+
+    /**
      * Direction and language tags are the two things a screen reader and a text
      * shaper actually rely on, so they are asserted per locale rather than
      * assumed.

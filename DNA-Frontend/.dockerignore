@@ -1,6 +1,11 @@
 .git/
 node_modules/
 vendor/
+# Written by a local `composer install`, which installs require-dev packages.
+# The image builds its vendor/ with --no-dev, so shipping this manifest makes
+# Laravel try to register providers that are not in the image (Pail, Pao,
+# Collision) and every artisan command fatals before Apache ever starts.
+bootstrap/cache/*.php
 storage/logs/*
 storage/framework/cache/data/*
 storage/framework/sessions/*

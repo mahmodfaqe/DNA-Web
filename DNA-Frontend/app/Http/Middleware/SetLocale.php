@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Support\Locales;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,6 +22,13 @@ class SetLocale
         }
 
         app()->setLocale($locale);
+
+        // Laravel points Carbon at the app locale, but Carbon's `ku` is
+        // Kurmanji written in Latin script — a Sorani page came back reading
+        // "berî 0 saniye". Central Kurdish is `ckb`, which is exactly what this
+        // locale's tag already holds; `ar` and `en` map to themselves.
+        Carbon::setLocale(Locales::tag($locale));
+
         $request->session()->put('locale', $locale);
 
         // So every route() call inherits the current language without each
