@@ -5,6 +5,8 @@ services:
     build: ./DNA-Backend
     container_name: dna_backend
     restart: unless-stopped
+    ports:
+      - "8000:8000"
     environment:
       MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10485760}
       MAX_RECORDS: ${MAX_RECORDS:-500}
@@ -12,14 +14,14 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
       RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-30}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
-    # No `ports:` mapping. The analysis service is only ever called by the web
-    # container, so it stays on the internal network instead of being published
-    # to every interface on the host. Add `ports: ["127.0.0.1:8000:8000"]`
-    # temporarily if you need to reach /docs while developing.
-    expose:
-      - "8000"
-    networks: [internal]
-
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8000/ || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks: [ internal ]
+    
   db:
     image: mysql:8.0
     container_name: dna_mysql
