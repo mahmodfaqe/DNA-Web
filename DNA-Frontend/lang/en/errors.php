@@ -36,6 +36,13 @@ return [
         'extensions' => 'Only .fasta, .fa, .fna and .txt files are accepted.',
     ],
 
+    'compiler' => [
+        'attribute' => 'description',
+        'required' => 'Write a description of the behaviour you want.',
+        'too_short' => 'That is too short to compile. Describe a trigger and an output.',
+        'too_long' => 'Keep the description under :characters characters.',
+    ],
+
     'not_found' => [
         'title' => 'Result not found',
         'body' => 'This result has expired or the link is wrong. Uploading the file again will produce a new one.',

@@ -144,3 +144,91 @@ production.
   present.** They are unused — the application has no accounts — but removing
   them would block anyone who later switches `SESSION_DRIVER` or `CACHE_STORE` to
   `database`.
+
+---
+
+# BioCompiler (second tab)
+
+Natural language in, genetic circuit out:
+
+```
+sentence (ku/ar/en)
+  → normalise + tokenise      trilingual lexicon, one grammar
+  → Specification             conditions, connective, outputs, terminal action
+  → gate netlist              SENSOR / AND / OR / NOT / OUTPUT / TERMINAL
+  → transcriptional units     promoter + RBS + CDS + terminator, joined by scars
+  → FASTA + parts manifest + diagnostics
+```
+
+## Why the parser is not a model call
+
+The feature is named after language models, and the honest answer is that the
+compiler does not use one. A compiler has to be **deterministic**: the same
+sentence must give the same DNA next year, the parse has to be explainable when
+it is wrong, and a design tool should not need a network round trip to work.
+
+So the parser is a grammar over a trilingual lexicon. `parser.normalise_with_model()`
+is the seam where a model belongs — as a *pre-processor* that rewrites loose
+prose into the canonical shape the grammar accepts, leaving compilation itself
+reproducible and auditable. That is the right division of labour: the model
+handles the messiness of human phrasing, the compiler handles the biology.
+
+## One grammar, three languages
+
+A parser per language would triple the grammar and let the three drift apart.
+Instead the grammar is language-neutral and only the *words* are per-language, so
+a Kurdish sentence and its Arabic translation compile to byte-identical DNA — the
+property `test_all_three_languages_compile_to_identical_dna` exists to protect.
+
+Three problems this had to solve:
+
+| Problem | Why it breaks a naive parser |
+|---|---|
+| **Arabic-script punctuation** | `،` and `؛` sit inside the Arabic Unicode block, so "keep everything Arabic" glues them to the last word and the final keyword never matches. |
+| **Fused conjunction** | Arabic writes "and the lactose" as one word. The waw is split off only when the remainder is a word the lexicon knows, so ordinary Kurdish words starting with the same letter survive. |
+| **Word order** | Kurdish is verb-final ("green protein produce"), Arabic and English are not; and Arabic puts the comparison verb *before* the sensor. Sensors and actuators are disjoint vocabularies, so both passes scan the whole sentence and neither arrangement can hide a term. |
+
+## Sequence provenance
+
+This is the most consequential decision in the module, and it is a refusal.
+
+Short regulatory elements — promoters, RBS, terminators, assembly scars — are
+carried as **literal sequence**. They are tens of base pairs, they are the part
+the compiler actually *decides*, and they can be checked by eye against the
+registry.
+
+Coding sequences are **not**. A GFP CDS is ~720 bp; transcribing one from memory
+risks a silent single-base error that changes a codon and produces a construct
+that looks right and does not work. So a CDS is emitted as an annotated
+placeholder carrying its registry ID and expected length, and the FASTA header
+says so. A design tool that quietly guesses at a coding sequence is worse than
+one that admits it does not have it.
+
+The biocontainment effector is a placeholder for a different reason: which gene
+kills the cell is a biosafety decision for the researcher and their institution,
+not a default for a compiler to pick.
+
+## Diagnostics are the product
+
+The most useful output is not the FASTA, it is the list of places where the
+sentence and biology did not line up. Three that fire on the example from the
+brief:
+
+- **"for 24 hours"** — no DNA sequence means that. Degradation tags act over
+  minutes. Timing on this scale comes from the experiment, not the construct.
+- **"above 37 °C"** — the threshold is a property of the thermosensitive
+  repressor, not a number the compiler can set.
+- **AND gate** — building it fuses two promoters into a hybrid. That produces a
+  real, orderable sequence whose response curve nobody can predict without
+  measuring it.
+
+A student who reads those three warnings has learned more than one who receives
+a sequence and trusts it.
+
+## Limitations
+
+- **Four conditions maximum**, flat logic only. Mixing "and" with "or" needs
+  bracketing the grammar cannot recover, so it warns and applies the first
+  connective.
+- **Output is a teaching draft, not an order-ready construct.** Every compile
+  says so, in the interface and in the FASTA header.

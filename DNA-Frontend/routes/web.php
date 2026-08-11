@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AnalysisController;
+use App\Http\Controllers\CompilerController;
 use App\Http\Middleware\SetLocale;
 use App\Support\Locales;
 use Illuminate\Http\Request;
@@ -26,4 +27,14 @@ Route::prefix('{locale}')
         Route::get('/result/{analysis}/print', [AnalysisController::class, 'print'])->name('analysis.print');
         Route::get('/result/{analysis}/export.csv', [AnalysisController::class, 'csv'])->name('analysis.csv');
         Route::get('/result/{analysis}/export.json', [AnalysisController::class, 'json'])->name('analysis.json');
+
+        // Second tab: natural language -> genetic circuit.
+        Route::get('/compiler', [CompilerController::class, 'index'])->name('compiler.index');
+        Route::post('/compiler', [CompilerController::class, 'store'])
+            ->middleware('throttle:20,1')
+            ->name('compiler.store');
+
+        Route::get('/circuit/{circuit}', [CompilerController::class, 'show'])->name('compiler.show');
+        Route::get('/circuit/{circuit}/circuit.fasta', [CompilerController::class, 'fasta'])->name('compiler.fasta');
+        Route::get('/circuit/{circuit}/export.json', [CompilerController::class, 'json'])->name('compiler.json');
     });

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Analysis;
+use App\Models\Circuit;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -15,9 +16,12 @@ Artisan::command('inspire', function () {
  */
 Artisan::command('analyses:prune {--days=30}', function () {
     $days = (int) $this->option('days');
-    $deleted = Analysis::where('created_at', '<', now()->subDays($days))->delete();
+    $cutoff = now()->subDays($days);
 
-    $this->info("Removed {$deleted} analyses older than {$days} days.");
-})->purpose('Delete stored analyses past the retention window');
+    $analyses = Analysis::where('created_at', '<', $cutoff)->delete();
+    $circuits = Circuit::where('created_at', '<', $cutoff)->delete();
+
+    $this->info("Removed {$analyses} analyses and {$circuits} circuits older than {$days} days.");
+})->purpose('Delete stored analyses and circuits past the retention window');
 
 Schedule::command('analyses:prune')->daily();

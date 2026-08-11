@@ -18,14 +18,14 @@ import uuid
 from collections import defaultdict, deque
 from typing import Any
 
-from fastapi import BackgroundTasks, Depends, FastAPI, File, Request, UploadFile
+from fastapi import BackgroundTasks, Body, Depends, FastAPI, File, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .config import settings
 from .errors import AnalysisError, ErrorCode
 from .jobs import store
-from .services import fasta
+from .services import biocompiler, fasta
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level, logging.INFO),
@@ -192,6 +192,17 @@ async def analyze_async(
 
     background_tasks.add_task(run, job_id, contents)
     return {"status": "accepted", "job_id": job_id}
+
+
+@app.post("/api/v1/compile", tags=["compiler"], dependencies=[Depends(rate_limit)])
+async def compile_circuit(text: str = Body(..., embed=True, max_length=biocompiler.MAX_INPUT_CHARS)) -> dict[str, Any]:
+    """Compile a natural-language description into a genetic circuit.
+
+    Never raises for an unparseable sentence: a failed compile is a normal
+    result with `ok: false` and diagnostics saying which clause did not map onto
+    biology. That is information the user needs, not an error to swallow.
+    """
+    return biocompiler.compile_text(text)
 
 
 @app.get("/api/v1/job/{job_id}", tags=["analysis"])

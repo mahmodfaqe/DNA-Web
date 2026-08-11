@@ -12,6 +12,28 @@ missense or nonsense.
 
 ---
 
+## Two tools
+
+**Sequence analysis** — upload a FASTA file, get composition, thermodynamics,
+reading frames and an aligned comparison.
+
+**BioCompiler** — describe a genetic circuit in a sentence and get the logic
+gates, the parts list and the assembled DNA:
+
+```
+"If temperature exceeds 37 and lactose is present,
+ produce green protein for 24 hours then self destruct."
+
+  → IF TEMPERATURE > 37 AND LACTOSE THEN GFP + SELF_DESTRUCT
+  → SENSOR ─┐
+            ├─ AND ─→ OUTPUT (GFP) ─→ BIOCONTAINMENT
+    SENSOR ─┘
+  → 2 transcriptional units, 3394 bp, FASTA
+  → 4 warnings, including: no DNA sequence means "for 24 hours"
+```
+
+The same sentence in Kurdish, Arabic or English compiles to byte-identical DNA.
+
 ## Architecture
 
 ```
@@ -70,7 +92,7 @@ DNA-Backend/data/mutation_demo.fasta  substitution, frameshift and in-frame dele
 # Analysis service
 cd DNA-Backend
 pip install -r requirements-dev.txt
-pytest                                # 24 tests
+pytest                                # 54 tests
 
 # Web application
 cd DNA-Frontend
@@ -107,6 +129,7 @@ The analysis service documents itself at `/docs` when reachable.
 |---|---|
 | `GET /health` | Liveness, version, in-memory job count |
 | `POST /api/v1/analyze` | Analyse a FASTA file, returns the full result |
+| `POST /api/v1/compile` | Compile a description into a circuit |
 | `POST /api/v1/analyze-async` | Queue an analysis, returns a `job_id` |
 | `GET /api/v1/job/{job_id}` | Poll an async job |
 
@@ -144,6 +167,22 @@ docker compose exec -T db mysql -u root -p dna_db < dna_db_backup.sql
 - [ ] `APP_URL` set to the public URL, over HTTPS
 - [ ] TLS terminated by a reverse proxy in front of `frontend`
 - [ ] A retention window agreed with whoever owns the data
+
+## A note on the compiler's output
+
+The compiler produces a **teaching draft, not an order-ready construct**.
+
+Regulatory sequences (promoters, RBS, terminators) are included in full. Coding
+sequences are not: they are referenced by registry ID and emitted as annotated
+placeholders, because transcribing a 720 bp CDS from memory risks a silent
+single-base error that produces a construct which looks right and does not work.
+Fetch each one from parts.igem.org.
+
+The biocontainment effector is deliberately left unselected. Which gene kills the
+cell is a biosafety decision for you and your institution.
+
+Any real build needs part verification, a compatible host, and institutional
+biosafety review.
 
 ## Credits
 

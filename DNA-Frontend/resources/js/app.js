@@ -111,7 +111,47 @@ function initProteinDialog() {
 
 /* ---------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------
+ * Compiler: live character count, example insertion, submit state
+ * ---------------------------------------------------------------------- */
+
+function initCompiler() {
+    const form = document.querySelector('[data-compile-form]');
+    const input = document.querySelector('[data-compile-input]');
+    if (!input) return;
+
+    const counter = document.querySelector('[data-char-count]');
+    const max = Number(input.getAttribute('maxlength')) || 2000;
+
+    const render = () => {
+        if (counter) counter.textContent = `${input.value.length} / ${max}`;
+    };
+
+    input.addEventListener('input', render);
+    render();
+
+    document.querySelectorAll('[data-example]').forEach((button) => {
+        button.addEventListener('click', () => {
+            // Fill rather than submit: the example is a starting point to edit,
+            // not a shortcut past reading it.
+            input.value = button.dataset.text ?? '';
+            input.focus();
+            render();
+        });
+    });
+
+    form?.addEventListener('submit', () => {
+        const button = form.querySelector('[data-submit]');
+        if (!button) return;
+        button.disabled = true;
+        button.textContent = t('labelCompiling', 'Compiling…');
+    });
+}
+
+/* ---------------------------------------------------------------------- */
+
 document.addEventListener('DOMContentLoaded', () => {
     initUpload();
     initProteinDialog();
+    initCompiler();
 });

@@ -53,23 +53,20 @@ class AnalysisController extends Controller
             'payload' => $payload,
         ]);
 
-        return redirect()->route('analysis.show', [
-            'locale' => app()->getLocale(),
-            'analysis' => $analysis->id,
-        ]);
+        return redirect()->route('analysis.show', ['analysis' => $analysis->id]);
     }
 
-    public function show(string $locale, Analysis $analysis): mixed
+    public function show(Analysis $analysis): mixed
     {
         return view('analysis.show', ['analysis' => $analysis]);
     }
 
-    public function print(string $locale, Analysis $analysis): mixed
+    public function print(Analysis $analysis): mixed
     {
         return view('analysis.print', ['analysis' => $analysis]);
     }
 
-    public function json(string $locale, Analysis $analysis): JsonResponse
+    public function json(Analysis $analysis): JsonResponse
     {
         return response()->json($analysis->payload)
             ->header('Content-Disposition', 'attachment; filename="dna-analysis-' . $analysis->id . '.json"');
@@ -79,7 +76,7 @@ class AnalysisController extends Controller
      * CSV is streamed rather than assembled in memory, and carries a UTF-8 BOM
      * so Excel opens Kurdish and Arabic headers correctly instead of mojibake.
      */
-    public function csv(string $locale, Analysis $analysis): StreamedResponse
+    public function csv(Analysis $analysis): StreamedResponse
     {
         $filename = 'dna-analysis-' . $analysis->id . '.csv';
 

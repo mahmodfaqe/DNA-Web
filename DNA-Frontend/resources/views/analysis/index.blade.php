@@ -3,6 +3,8 @@
 @section('title', __('common.hero.title'))
 
 @section('content')
+    <x-tabs active="analysis" />
+
     <section class="mx-auto max-w-2xl text-center">
         <p class="eyebrow">{{ __('common.hero.eyebrow') }}</p>
         <h1 class="mt-2 text-3xl font-bold leading-tight tracking-tight sm:text-4xl">

@@ -64,6 +64,39 @@ class DnaBackendClient
         throw $this->toException($response, $requestId);
     }
 
+    /**
+     * Compile a natural-language description into a genetic circuit.
+     *
+     * An unparseable sentence is not an exception: the backend answers 200 with
+     * `ok: false` and diagnostics naming the clause it could not map. Only
+     * transport and server faults raise.
+     */
+    public function compile(string $text): array
+    {
+        $requestId = (string) Str::uuid();
+
+        try {
+            $response = Http::withHeaders(['X-Request-ID' => $requestId])
+                ->connectTimeout($this->connectTimeout)
+                ->timeout($this->timeout)
+                ->retry($this->retries, 400, fn ($exception) => $exception instanceof ConnectionException)
+                ->post($this->baseUrl . '/api/v1/compile', ['text' => $text]);
+        } catch (ConnectionException $exception) {
+            Log::error('Compiler backend unreachable', [
+                'request_id' => $requestId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw new BackendException('backend_unreachable', [], 503);
+        }
+
+        if ($response->successful()) {
+            return $response->json();
+        }
+
+        throw $this->toException($response, $requestId);
+    }
+
     public function health(): array
     {
         try {
