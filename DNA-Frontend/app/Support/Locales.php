@@ -36,6 +36,7 @@ final class Locales
         return $locale !== null && array_key_exists($locale, self::SUPPORTED);
     }
 
+    /** @return array<string, string> */
     public static function meta(?string $locale = null): array
     {
         $locale = self::supports($locale) ? $locale : app()->getLocale();

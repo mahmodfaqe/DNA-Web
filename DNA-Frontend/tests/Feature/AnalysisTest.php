@@ -22,6 +22,7 @@ class AnalysisTest extends TestCase
         );
     }
 
+    /** @return array<string, mixed> */
     private function backendPayload(): array
     {
         return [
@@ -57,6 +58,7 @@ class AnalysisTest extends TestCase
         ];
     }
 
+    /** @return array<string, mixed> */
     private function gene(string $id): array
     {
         return [

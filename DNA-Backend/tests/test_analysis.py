@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import pytest
-
 from app.errors import AnalysisError, ErrorCode
 from app.services import compare, fasta
 from app.services import sequence as seq
-
 
 # --------------------------------------------------------------------------
 # Composition and GC

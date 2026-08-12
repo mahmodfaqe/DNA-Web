@@ -14,6 +14,7 @@ class CompilerTest extends TestCase
 
     private const SENTENCE_KU = 'ئەگەر پلەی گەرمی لە ٣٧ زیادی کرد و لاکتۆز هەبوو، پرۆتینی سەوز دەربدە.';
 
+    /** @return array<string, mixed> */
     private function compiled(bool $ok = true): array
     {
         return [

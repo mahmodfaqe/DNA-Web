@@ -108,7 +108,8 @@ def melting_temperature(sequence: str) -> dict[str, Any]:
         if length <= 13:
             return {"value": round(float(mt.Tm_Wallace(clean)), 2), "method": "wallace", "reliable": True}
         if length <= settings.tm_nn_max_bp:
-            return {"value": round(float(mt.Tm_NN(clean)), 2), "method": "nearest_neighbour", "reliable": True}
+            value = round(float(mt.Tm_NN(clean)), 2)
+            return {"value": value, "method": "nearest_neighbour", "reliable": True}
         return {"value": round(float(mt.Tm_GC(clean)), 2), "method": "gc_empirical", "reliable": False}
     except Exception:  # pragma: no cover - Biopython edge cases
         return {"value": None, "method": "none", "reliable": False}
@@ -240,7 +241,9 @@ def analyse_record(record_id: str, description: str, raw_sequence: str) -> dict[
         "base_composition": composition,
         "ambiguity_codes": ambiguity_codes,
         "quality": {
-            "unknown_fraction": round(composition["unknown_bases"] / len(sequence) * 100, 2) if sequence else 0.0,
+            "unknown_fraction": (
+                round(composition["unknown_bases"] / len(sequence) * 100, 2) if sequence else 0.0
+            ),
             "has_ambiguity": bool(ambiguity_codes) or composition["N"] > 0,
         },
         "orfs": orfs,

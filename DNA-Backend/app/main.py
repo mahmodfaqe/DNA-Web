@@ -111,7 +111,12 @@ def rate_limit(request: Request) -> None:
 
 @app.exception_handler(AnalysisError)
 async def analysis_error_handler(request: Request, exc: AnalysisError) -> JSONResponse:
-    logger.warning("analysis error %s %s [%s]", exc.code, exc.params, getattr(request.state, "request_id", "-"))
+    logger.warning(
+        "analysis error %s %s [%s]",
+        exc.code,
+        exc.params,
+        getattr(request.state, "request_id", "-"),
+    )
     return JSONResponse(status_code=exc.status_code, content=exc.payload())
 
 
@@ -195,7 +200,9 @@ async def analyze_async(
 
 
 @app.post("/api/v1/compile", tags=["compiler"], dependencies=[Depends(rate_limit)])
-async def compile_circuit(text: str = Body(..., embed=True, max_length=biocompiler.MAX_INPUT_CHARS)) -> dict[str, Any]:
+async def compile_circuit(
+    text: str = Body(..., embed=True, max_length=biocompiler.MAX_INPUT_CHARS),
+) -> dict[str, Any]:
     """Compile a natural-language description into a genetic circuit.
 
     Never raises for an unparseable sentence: a failed compile is a normal

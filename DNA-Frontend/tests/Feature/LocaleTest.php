@@ -152,7 +152,10 @@ class LocaleTest extends TestCase
         return $keys;
     }
 
-    /** @return string[] */
+    /**
+     * @param  array<string, mixed>  $items
+     * @return string[]
+     */
     private function dot(array $items, string $prefix): array
     {
         $keys = [];
@@ -167,6 +170,7 @@ class LocaleTest extends TestCase
         return $keys;
     }
 
+    /** @return array<string, mixed> */
     private function payload(): array
     {
         return [

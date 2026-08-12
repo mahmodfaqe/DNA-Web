@@ -18,7 +18,6 @@ from __future__ import annotations
 import math
 
 import pytest
-
 from app.services import memory
 from app.services.memory import construct, library, ode, sequence
 from app.services.memory.diagnostics import Code
@@ -112,7 +111,7 @@ def test_a_recombinase_register_never_unflips_on_its_own():
     )
 
     flipped = outcome.phases[1].series["flipped"]
-    assert all(later >= earlier - 1e-9 for earlier, later in zip(flipped, flipped[1:]))
+    assert all(later >= earlier - 1e-9 for earlier, later in zip(flipped, flipped[1:], strict=False))
     assert outcome.retained_fraction >= outcome.write_fraction - 1e-9
 
 

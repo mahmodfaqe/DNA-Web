@@ -19,6 +19,8 @@ class AnalyzeRequest extends FormRequest
      * extension and rejects the very files this form exists to accept. The
      * sequence itself is validated by the backend parser, which is the only
      * thing that can tell a real FASTA record from a text file.
+     *
+     * @return array<string, array<int, string>>
      */
     public function rules(): array
     {

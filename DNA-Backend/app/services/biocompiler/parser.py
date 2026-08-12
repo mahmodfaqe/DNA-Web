@@ -136,7 +136,9 @@ def _match_at(tokens: list[str], position: int, index: list[tuple[list[str], str
         window = tokens[position:end]
         if len(window) != len(phrase):
             continue
-        if all(expected in lexicon.variants(actual) for actual, expected in zip(window, phrase)):
+        # `window` was cut to len(phrase) above, so strict= only asserts that.
+        pairs = zip(window, phrase, strict=True)
+        if all(expected in lexicon.variants(actual) for actual, expected in pairs):
             return symbol, len(phrase)
     return None
 

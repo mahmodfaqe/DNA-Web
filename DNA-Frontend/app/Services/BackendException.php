@@ -10,6 +10,7 @@ use RuntimeException;
  */
 class BackendException extends RuntimeException
 {
+    /** @param  array<string, mixed>  $params */
     public function __construct(
         public readonly string $errorCode,
         public readonly array $params = [],
@@ -21,6 +22,8 @@ class BackendException extends RuntimeException
     /**
      * Flatten params into values that can be dropped straight into a translation
      * string. Lists become comma-separated text; everything else is cast.
+     *
+     * @return array<string, string>
      */
     public function replacements(): array
     {

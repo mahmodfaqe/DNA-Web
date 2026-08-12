@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * One stochastic simulation run, stored for the reasons an analysis is — a
@@ -14,6 +15,16 @@ use Illuminate\Database\Eloquent\Model;
  * different numbers, so "the result I was looking at" is not something the user
  * can reconstruct by pressing the button again. Storing the run, seed included,
  * is what makes a figure in a report point at something real.
+ *
+ * @property string $id
+ * @property string $preset
+ * @property int $cells
+ * @property int $minutes
+ * @property int $seed
+ * @property bool $succeeded
+ * @property array<string, mixed> $result
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class Simulation extends Model
 {
@@ -47,11 +58,13 @@ class Simulation extends Model
         ];
     }
 
+    /** @return array<string, mixed> */
     public function request(): array
     {
         return $this->result['request'] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function network(): array
     {
         return $this->result['network'] ?? [];
@@ -63,56 +76,67 @@ class Simulation extends Model
         return $this->network()['genes'] ?? [];
     }
 
+    /** @return array<int, string> */
     public function geneIds(): array
     {
         return array_column($this->genes(), 'id');
     }
 
+    /** @return array<string, array<string, mixed>> */
     public function statistics(): array
     {
         return $this->result['statistics'] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function statisticsFor(string $gene): array
     {
         return $this->statistics()[$gene] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function trajectories(): array
     {
         return $this->result['trajectories'] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function distributions(): array
     {
         return $this->result['distributions'] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function crosstalk(): array
     {
         return $this->result['crosstalk'] ?? [];
     }
 
+    /** @return array<string, array<string, mixed>> */
     public function attribution(): array
     {
         return $this->crosstalk()['attribution'] ?? [];
     }
 
+    /** @return array<string, mixed>|null */
     public function decomposition(): ?array
     {
         return $this->result['decomposition'] ?? null;
     }
 
+    /** @return array<string, mixed>|null */
     public function switching(): ?array
     {
         return $this->result['switching'] ?? null;
     }
 
+    /** @return array<string, mixed> */
     public function time(): array
     {
         return $this->result['time'] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function performance(): array
     {
         return $this->result['performance'] ?? [];
@@ -138,6 +162,7 @@ class Simulation extends Model
             : array_values(array_filter($items, fn ($item) => $item['severity'] === $severity));
     }
 
+    /** @return array<string, int> */
     public function diagnosticCounts(): array
     {
         return $this->result['diagnostic_counts'] ?? ['error' => 0, 'warning' => 0, 'info' => 0];

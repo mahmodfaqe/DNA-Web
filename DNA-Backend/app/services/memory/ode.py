@@ -26,8 +26,9 @@ simulator measures it directly.
 from __future__ import annotations
 
 import math
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Sequence
+from typing import Any
 
 from .library import Architecture, Chassis, Recombinase, Signal
 
@@ -77,7 +78,10 @@ def integrate(
     return time, current, path
 
 
-def thin(path: Sequence[tuple[float, list[float]]], count: int = MAX_SAMPLES) -> list[tuple[float, list[float]]]:
+def thin(
+    path: Sequence[tuple[float, list[float]]],
+    count: int = MAX_SAMPLES,
+) -> list[tuple[float, list[float]]]:
     """Reduce a dense solver path to something a chart and a JSON column can hold."""
     if len(path) <= count:
         return list(path)

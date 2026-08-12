@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import pytest
-
-from app.services.biocompiler import compile_text
-from app.services.biocompiler import lexicon
+from app.services.biocompiler import compile_text, lexicon
 from app.services.biocompiler.diagnostics import Code
 
 # The sentence from the project brief, in all three languages.

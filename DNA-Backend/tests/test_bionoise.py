@@ -22,7 +22,6 @@ from __future__ import annotations
 import random
 
 import pytest
-
 from app.services import bionoise
 from app.services.bionoise import gillespie, network, statistics
 from app.services.bionoise.diagnostics import Code

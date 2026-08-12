@@ -18,6 +18,9 @@ class SimulatorTest extends TestCase
      * Deliberately hand-written rather than captured from a real run: it is the
      * *contract* between the two services, and a fixture recorded from the
      * backend would keep passing after a rename that breaks the page.
+     *
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
      */
     private function payload(array $overrides = []): array
     {
@@ -113,6 +116,10 @@ class SimulatorTest extends TestCase
         ], $overrides);
     }
 
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
     private function valid(array $overrides = []): array
     {
         return array_merge([
@@ -126,6 +133,9 @@ class SimulatorTest extends TestCase
         ], $overrides);
     }
 
+    /**
+     * @param  array<string, mixed>  $overrides
+     */
     private function stored(array $overrides = []): Simulation
     {
         $result = $this->payload($overrides);

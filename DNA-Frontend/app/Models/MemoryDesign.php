@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * One memory-circuit design: the comparison, the verdict, and the DNA.
@@ -13,6 +14,16 @@ use Illuminate\Database\Eloquent\Model;
  * with — how long the memory must hold, how leaky the sensor is, whether the
  * construct sits on a plasmid — so a design is only useful if the inputs that
  * produced it travel with it.
+ *
+ * @property string $id
+ * @property string $signal
+ * @property string $chassis
+ * @property string|null $architecture
+ * @property int $hold_hours
+ * @property bool $succeeded
+ * @property array<string, mixed> $result
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class MemoryDesign extends Model
 {
@@ -40,11 +51,13 @@ class MemoryDesign extends Model
         ];
     }
 
+    /** @return array<string, mixed> */
     public function request(): array
     {
         return $this->result['request'] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function recommendation(): array
     {
         return $this->result['recommendation'] ?? [];
@@ -56,21 +69,25 @@ class MemoryDesign extends Model
         return $this->result['comparison'] ?? [];
     }
 
+    /** @return array<string, array<string, mixed>> */
     public function outcomes(): array
     {
         return $this->result['outcomes'] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function outcomeFor(string $architecture): array
     {
         return $this->outcomes()[$architecture] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function orientation(): array
     {
         return $this->result['orientation'] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function composition(): array
     {
         return $this->result['composition'] ?? [];
@@ -82,16 +99,19 @@ class MemoryDesign extends Model
         return $this->result['constructs'] ?? [];
     }
 
+    /** @return array<int, array<string, mixed>> */
     public function parts(): array
     {
         return $this->result['parts'] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function totals(): array
     {
         return $this->result['totals'] ?? [];
     }
 
+    /** @return array<string, mixed> */
     public function synthesis(): array
     {
         return $this->result['synthesis'] ?? [];
@@ -112,6 +132,7 @@ class MemoryDesign extends Model
             : array_values(array_filter($items, fn ($item) => $item['severity'] === $severity));
     }
 
+    /** @return array<string, int> */
     public function diagnosticCounts(): array
     {
         return $this->result['diagnostic_counts'] ?? ['error' => 0, 'warning' => 0, 'info' => 0];

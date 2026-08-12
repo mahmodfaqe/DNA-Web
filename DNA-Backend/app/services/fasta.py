@@ -10,7 +10,8 @@ from Bio import SeqIO
 
 from ..config import settings
 from ..errors import AnalysisError, ErrorCode
-from . import compare, sequence as seq_service
+from . import compare
+from . import sequence as seq_service
 
 # Keys never sent to the client. Full sequences can be megabytes each and would
 # bloat every response; the UI only needs them on explicit request.

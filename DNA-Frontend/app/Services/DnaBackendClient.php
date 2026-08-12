@@ -38,6 +38,7 @@ class DnaBackendClient
         );
     }
 
+    /** @return array<string, mixed> */
     public function analyze(UploadedFile $file): array
     {
         $requestId = (string) Str::uuid();
@@ -72,6 +73,8 @@ class DnaBackendClient
      * An unparseable sentence is not an exception: the backend answers 200 with
      * `ok: false` and diagnostics naming the clause it could not map. Only
      * transport and server faults raise.
+     *
+     * @return array<string, mixed>
      */
     public function compile(string $text): array
     {
@@ -106,6 +109,9 @@ class DnaBackendClient
      * analysis timeout is tuned for a file upload. A run that is clamped, or
      * that stops when it exhausts its step budget, is still a 200 with
      * diagnostics — only transport and server faults raise.
+     *
+     * @param  array<string, mixed>  $parameters
+     * @return array<string, mixed>
      */
     public function simulate(array $parameters): array
     {
@@ -140,6 +146,9 @@ class DnaBackendClient
      * Shares the simulation timeout: the work is an ODE integration and a
      * sequence scan rather than a file parse, and both are measured in seconds
      * of CPU rather than in bytes of input.
+     *
+     * @param  array<string, mixed>  $parameters
+     * @return array<string, mixed>
      */
     public function memory(array $parameters): array
     {
@@ -166,6 +175,7 @@ class DnaBackendClient
         throw $this->toException($response, $requestId);
     }
 
+    /** @return array<string, mixed> */
     public function health(): array
     {
         try {

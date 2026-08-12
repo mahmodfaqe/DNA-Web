@@ -3,3 +3,42 @@ name = "dna-web"
 version = "0.1.0"
 requires-python = ">=3.9"
 dependencies = []
+
+[tool.ruff]
+# 110 is what this codebase already writes to; 88 would mean rewrapping ~200
+# lines of numerical code for no gain. Tighten it later with `ruff format`.
+line-length = 110
+target-version = "py312"
+extend-exclude = ["DNA-Frontend"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "W",    # warnings
+    "I",    # import order
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "SIM",  # simplify
+    "C4",   # comprehensions
+    "RET",  # return
+]
+ignore = [
+    # FastAPI's whole dependency system is `param: T = Depends(...)` /
+    # `File(...)` / `Body(...)`. B008 exists to catch mutable defaults; here it
+    # only catches the framework's documented idiom.
+    "B008",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Test fixtures assert on hand-written literal payloads; wrapping them to fit a
+# column limit makes the expected values harder to compare against the real API.
+"DNA-Backend/tests/*" = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["DNA-Backend/app"]
+ignore_missing_imports = true      # Biopython ships no stubs.
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true

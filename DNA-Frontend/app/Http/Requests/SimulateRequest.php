@@ -22,6 +22,7 @@ class SimulateRequest extends FormRequest
         return true;
     }
 
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
@@ -71,6 +72,8 @@ class SimulateRequest extends FormRequest
      * so resource coupling is read through `boolean()` — which treats "missing"
      * as off instead of letting it fall through as null and be read as the
      * backend's default of on.
+     *
+     * @return array<string, mixed>
      */
     public function parameters(): array
     {

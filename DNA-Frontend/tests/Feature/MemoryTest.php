@@ -12,7 +12,12 @@ class MemoryTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** The contract between the two services, written by hand rather than recorded. */
+    /**
+     * The contract between the two services, written by hand rather than recorded.
+     *
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
     private function payload(array $overrides = []): array
     {
         return array_replace_recursive([
@@ -127,6 +132,10 @@ class MemoryTest extends TestCase
         ], $overrides);
     }
 
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
     private function valid(array $overrides = []): array
     {
         return array_merge([
@@ -135,6 +144,9 @@ class MemoryTest extends TestCase
         ], $overrides);
     }
 
+    /**
+     * @param  array<string, mixed>  $overrides
+     */
     private function stored(array $overrides = []): MemoryDesign
     {
         $result = $this->payload($overrides);

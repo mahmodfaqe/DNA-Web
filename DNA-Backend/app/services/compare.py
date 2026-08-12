@@ -206,7 +206,8 @@ def compare_pair(
         aligned_ref, aligned_alt = str(alignment[0]), str(alignment[1])
         variants = _variants_from_alignment(aligned_ref, aligned_alt, reference)
         matches = sum(
-            1 for a, b in zip(aligned_ref, aligned_alt)
+            # The two rows of a pairwise alignment are the same length by definition.
+            1 for a, b in zip(aligned_ref, aligned_alt, strict=True)
             if a == b and a != "-"
         )
         identity = round(matches / len(aligned_ref) * 100, 2) if aligned_ref else 0.0

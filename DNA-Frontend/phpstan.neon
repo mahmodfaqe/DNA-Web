@@ -13,8 +13,3 @@ parameters:
     excludePaths:
         - storage
         - bootstrap/cache
-
-    # Payloads from the analysis backend are decoded JSON. Their shape is
-    # asserted by the backend's own tests and by the Feature tests here, not by
-    # PHP types, so array<string, mixed> is as precise as this layer can be.
-    checkMissingIterableValueType: false
