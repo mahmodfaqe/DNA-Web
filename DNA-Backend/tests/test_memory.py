@@ -473,3 +473,87 @@ def test_the_same_request_gives_the_same_design():
 
     assert first["fasta"] == second["fasta"]
     assert first["comparison"] == second["comparison"]
+
+
+# --------------------------------------------------------------------------
+# Eukaryotic hosts
+# --------------------------------------------------------------------------
+
+def test_yeast_is_built_from_polymerase_two_parts_not_bacterial_ones():
+    """The bacterial kit is not the yeast kit with different labels."""
+    result = design(signal="galactose", chassis="yeast", hold_hours=48)
+
+    assert result["ok"] is True
+    ids = {part["id"] for part in result["parts"]}
+
+    # Nothing from the iGEM bacterial library may appear in a nucleus.
+    assert not any(part_id.startswith("BBa_") for part_id in ids)
+    # And the initiation element is a base context, not a Shine-Dalgarno site.
+    assert "KOZAK_SC" in ids
+
+
+def test_a_yeast_integrase_carries_a_nuclear_localisation_signal():
+    """Expressed in the cytoplasm, an integrase never meets the DNA it cuts."""
+    result = design(signal="galactose", chassis="yeast", hold_hours=8,
+                    signal_minutes=120, must_be_reversible=False)
+
+    writer = next(c for c in result["constructs"] if c["name"] == "writer")
+    roles = [item["part_id"] for item in writer["annotations"]]
+
+    assert "NLS_SV40" in roles
+    # And it sits ahead of the coding sequence, in frame with it.
+    assert roles.index("NLS_SV40") < roles.index("BXB1_INT")
+    assert Code.NUCLEAR_LOCALISATION_REQUIRED in codes(result)
+
+
+def test_a_yeast_part_points_at_sgd_rather_than_the_igem_registry():
+    result = design(signal="galactose", chassis="yeast", hold_hours=48)
+
+    terminator = next(p for p in result["parts"] if p["id"] == "tCYC1")
+    assert terminator["registry_url"] == "https://www.yeastgenome.org/locus/YJR048W"
+
+
+def test_an_unsupplied_eukaryotic_cargo_is_declared_rather_than_invented():
+    """A yeast cargo is a 400 bp promoter this tool will not write from memory."""
+    result = design(signal="galactose", chassis="yeast", hold_hours=48)
+
+    assert Code.CARGO_NOT_SUPPLIED in codes(result)
+    # And with nothing to read, no orientation is claimed.
+    assert result["orientation"]["decided_by_sequence"] is False
+
+
+def test_a_yeast_protein_is_short_lived_and_a_toggle_feels_it():
+    """Median yeast protein half-life is ~43 min, not the bacterial assumption."""
+    assert library.CHASSIS["yeast"].protein_half_life_minutes < 100
+    assert library.CHASSIS["yeast"].domain == "yeast"
+
+
+# --------------------------------------------------------------------------
+# Synthesis difficulty
+# --------------------------------------------------------------------------
+
+def test_placeholder_bases_do_not_drag_gc_content_to_an_extreme():
+    """The regression: a construct is mostly N, and N is neither G nor C.
+
+    Counting placeholders in the denominator put every design this tool
+    produced at roughly ten percent GC and reported all of them as difficult to
+    synthesise. The bases that exist are ordinary.
+    """
+    real = "GCATGCATGCAT" * 12          # 144 bp, 50% GC
+    padded = real + "N" * 2000
+
+    honest = sequence.synthesis_difficulty(real)
+    with_placeholders = sequence.synthesis_difficulty(padded)
+
+    assert honest["gc_percent"] == with_placeholders["gc_percent"]
+    assert "gc_extreme" not in with_placeholders["reasons"]
+    assert with_placeholders["resolved_bases"] == len(real)
+
+
+def test_gc_is_not_judged_when_almost_nothing_is_resolved():
+    barely = "GGGG" + "N" * 1000
+
+    verdict = sequence.synthesis_difficulty(barely)
+
+    assert "gc_extreme" not in verdict["reasons"]
+    assert verdict["resolved_percent"] < 1
