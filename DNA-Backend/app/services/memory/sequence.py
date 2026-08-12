@@ -277,7 +277,7 @@ def find_homopolymers(sequence: str) -> list[Finding]:
             score=min(1.0, (match.end() - match.start()) / 12.0),
             detail=f"{match.group()[0]} x {match.end() - match.start()}",
         )
-        for match in re.finditer(r"(A{%d,}|C{%d,}|G{%d,}|T{%d,})" % ((HOMOPOLYMER_MIN,) * 4), sequence)
+        for match in re.finditer(_HOMOPOLYMER_PATTERN, sequence)
     ]
 
 
