@@ -31,7 +31,12 @@ class MemoryDesign extends Model
 
     /** Mirrored from the backend, which validates them again and refuses the rest. */
     public const SIGNALS = [
+        // Bacterial sensors.
         'lactose', 'arabinose', 'tetracycline', 'temperature', 'oxygen', 'quorum', 'ph_acid',
+        // Yeast sensors. A promoter read by a sigma factor is not read in a
+        // nucleus, so a eukaryotic host has its own list and the backend
+        // refuses any pairing that crosses the two.
+        'galactose', 'copper', 'estradiol',
     ];
 
     public const CHASSIS = ['ecoli', 'bsubtilis', 'yeast'];

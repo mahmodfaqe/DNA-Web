@@ -493,16 +493,46 @@ def test_yeast_is_built_from_polymerase_two_parts_not_bacterial_ones():
 
 
 def test_a_yeast_integrase_carries_a_nuclear_localisation_signal():
-    """Expressed in the cytoplasm, an integrase never meets the DNA it cuts."""
-    result = design(signal="galactose", chassis="yeast", hold_hours=8,
-                    signal_minutes=120, must_be_reversible=False)
+    """Expressed in the cytoplasm, an integrase never meets the DNA it cuts.
 
-    writer = next(c for c in result["constructs"] if c["name"] == "writer")
-    roles = [item["part_id"] for item in writer["annotations"]]
+    Asserted against the builder rather than a whole design, because which
+    architecture a design lands on is the recommendation's business — and for
+    most holding times it lands on the toggle.
+    """
+    constructs = construct.build_recombinase(
+        library.ARCHITECTURES["recombinase"],
+        library.SIGNALS["galactose"],
+        library.RECOMBINASES["bxb1"],
+        "ACGT" * 20,
+        "forward",
+        construct.YEAST_KIT,
+    )
 
-    assert "NLS_SV40" in roles
+    writer = next(c for c in constructs if c.name == "writer")
+    parts = [item["part_id"] for item in writer.annotations()]
+
+    assert "NLS_SV40" in parts
     # And it sits ahead of the coding sequence, in frame with it.
-    assert roles.index("NLS_SV40") < roles.index("BXB1_INT")
+    assert parts.index("NLS_SV40") < parts.index("BXB1_INT")
+
+
+def test_a_bacterial_integrase_is_not_given_a_nuclear_localisation_signal():
+    """There is no nucleus to be carried into, and the fusion would cost 21 bp."""
+    constructs = construct.build_recombinase(
+        library.ARCHITECTURES["recombinase"],
+        library.SIGNALS["lactose"],
+        library.RECOMBINASES["bxb1"],
+        "ACGT" * 20,
+        "forward",
+    )
+
+    writer = next(c for c in constructs if c.name == "writer")
+    assert "NLS_SV40" not in [item["part_id"] for item in writer.annotations()]
+
+
+def test_a_eukaryotic_design_says_the_integrase_needs_importing():
+    result = design(signal="galactose", chassis="yeast", hold_hours=48)
+
     assert Code.NUCLEAR_LOCALISATION_REQUIRED in codes(result)
 
 

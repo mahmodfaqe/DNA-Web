@@ -371,6 +371,29 @@ class MemoryTest extends TestCase
     // Exports and retention
     // ----------------------------------------------------------------------
 
+    /**
+     * A eukaryotic host needs eukaryotic sensors. Offering only the bacterial
+     * ones would leave the yeast option selectable and unusable.
+     */
+    public function test_the_form_offers_the_eukaryotic_sensors_in_every_language(): void
+    {
+        foreach (['ku', 'ar', 'en'] as $locale) {
+            $response = $this->get("/{$locale}/memory")->assertOk();
+
+            foreach (['galactose', 'copper', 'estradiol'] as $signal) {
+                $response->assertSee(trans('memory.signals.' . $signal, [], $locale), false);
+            }
+        }
+    }
+
+    public function test_a_yeast_sensor_passes_validation_and_a_bacterial_one_in_yeast_is_left_to_the_backend(): void
+    {
+        Http::fake(['*/api/v1/memory' => Http::response($this->payload(), 200)]);
+
+        $this->post('/en/memory', $this->valid(['signal' => 'galactose', 'chassis' => 'yeast']))
+            ->assertSessionHasNoErrors();
+    }
+
     public function test_the_fasta_download_carries_the_construct(): void
     {
         $design = $this->stored();

@@ -41,9 +41,26 @@ to a synthesiser. The page says so, and so does every FASTA header.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 # Systematic identifiers, for retrieval rather than decoration. SGD serves each
 # of these on a stable URL, so a part list is something a reader can act on.
 SGD_URL = "https://www.yeastgenome.org/locus/"
+
+
+@dataclass(frozen=True)
+class YeastPart:
+    """A part named and sized for retrieval, not transcribed from memory."""
+
+    id: str
+    name: str
+    length: int
+    locus: str | None = None
+    note: str = ""
+
+    @property
+    def url(self) -> str | None:
+        return SGD_URL + self.locus if self.locus else None
 
 
 # --------------------------------------------------------------------------
@@ -52,44 +69,41 @@ SGD_URL = "https://www.yeastgenome.org/locus/"
 
 # Lengths are the span of native upstream sequence conventionally cloned as the
 # promoter, which is what a reader will actually retrieve.
-PROMOTERS: dict[str, dict[str, object]] = {
-    "galactose": {
-        "id": "pGAL1",
-        "locus": "YBR020W",
-        "name": "GAL1 promoter - galactose-inducible",
-        "length": 450,
-        "note": "Glucose-repressed. Induce in raffinose plus galactose, not in glucose.",
-    },
-    "copper": {
-        "id": "pCUP1",
-        "locus": "YHR053C",
-        "name": "CUP1-1 promoter - copper-inducible",
-        "length": 450,
-        "note": "Fast and dose-tunable, but with real basal expression.",
-    },
-    "estradiol": {
-        "id": "pZ3EV",
-        "locus": None,
-        "name": "Z3EV promoter - beta-estradiol-inducible",
-        "length": 400,
-        "note": "Synthetic: Z3 binding sites over a minimal GAL1 core. Needs the Z3EV activator expressed separately.",
-    },
+PROMOTERS: dict[str, YeastPart] = {
+    "galactose": YeastPart(
+        id="pGAL1",
+        name="GAL1 promoter - galactose-inducible",
+        length=450,
+        locus="YBR020W",
+        note="Glucose-repressed. Induce in raffinose plus galactose, not in glucose.",
+    ),
+    "copper": YeastPart(
+        id="pCUP1",
+        name="CUP1-1 promoter - copper-inducible",
+        length=450,
+        locus="YHR053C",
+        note="Fast and dose-tunable, but with real basal expression.",
+    ),
+    "estradiol": YeastPart(
+        id="pZ3EV",
+        name="Z3EV promoter - beta-estradiol-inducible",
+        length=400,
+        note="Synthetic: Z3 sites over a minimal GAL1 core. Needs the Z3EV activator expressed separately.",
+    ),
     # Constitutive, for the units that must simply run: the readout, and the
     # repressors of a toggle.
-    "constitutive_strong": {
-        "id": "pTEF1",
-        "locus": "YPR080W",
-        "name": "TEF1 promoter - strong constitutive",
-        "length": 412,
-        "note": "",
-    },
-    "constitutive_medium": {
-        "id": "pADH1",
-        "locus": "YOL086C",
-        "name": "ADH1 promoter - medium constitutive",
-        "length": 700,
-        "note": "",
-    },
+    "constitutive_strong": YeastPart(
+        id="pTEF1",
+        name="TEF1 promoter - strong constitutive",
+        length=412,
+        locus="YPR080W",
+    ),
+    "constitutive_medium": YeastPart(
+        id="pADH1",
+        name="ADH1 promoter - medium constitutive",
+        length=700,
+        locus="YOL086C",
+    ),
 }
 
 
@@ -97,25 +111,24 @@ PROMOTERS: dict[str, dict[str, object]] = {
 # Terminators
 # --------------------------------------------------------------------------
 
-TERMINATORS: dict[str, dict[str, object]] = {
-    "primary": {
-        "id": "tCYC1",
-        "locus": "YJR048W",
-        "name": "CYC1 terminator",
-        "length": 250,
-        "note": "",
-    },
+TERMINATORS: dict[str, YeastPart] = {
+    "primary": YeastPart(
+        id="tCYC1",
+        name="CYC1 terminator",
+        length=250,
+        locus="YJR048W",
+    ),
     # A second, different terminator for the neighbouring unit. Repeating one
     # terminator twice in a construct hands homologous recombination a substrate
     # — and in this organism that is not a remote risk, it is the mechanism the
     # whole field uses to assemble plasmids.
-    "secondary": {
-        "id": "tADH1",
-        "locus": "YOL086C",
-        "name": "ADH1 terminator",
-        "length": 190,
-        "note": "Different from tCYC1 on purpose: two copies of one terminator invite recombination between them.",
-    },
+    "secondary": YeastPart(
+        id="tADH1",
+        name="ADH1 terminator",
+        length=190,
+        locus="YOL086C",
+        note="Different from tCYC1 on purpose: two copies of one terminator invite recombination.",
+    ),
 }
 
 
@@ -149,55 +162,45 @@ SPACER = "GTCTAGCTGACTGCATCGTG"
 # Reporters and repressors
 # --------------------------------------------------------------------------
 
-REPORTER: dict[str, object] = {
-    "id": "yEGFP3",
-    "locus": None,
-    "name": "yEGFP3 - yeast-codon-optimised GFP",
-    "length": 717,
-    "note": "Codon-optimised for S. cerevisiae; the bacterial GFPmut3b CDS folds poorly here.",
-}
+REPORTER = YeastPart(
+    id="yEGFP3",
+    name="yEGFP3 - yeast-codon-optimised GFP",
+    length=717,
+    note="Codon-optimised for S. cerevisiae; the bacterial GFPmut3b CDS folds poorly here.",
+)
 
 # The toggle needs two repressors that both work in a nucleus. Bacterial LacI
 # and TetR do function as repressors in yeast, but only when their operators
 # are placed in a polymerase II core promoter — so the promoters below are
 # synthetic hybrids, and are named as such rather than borrowed from the
 # bacterial library.
-REPRESSORS: dict[str, dict[str, dict[str, object]]] = {
+REPRESSORS: dict[str, dict[str, YeastPart]] = {
     "tetr": {
-        "promoter": {
-            "id": "ptetO7",
-            "locus": None,
-            "name": "tetO7-CYC1core - TetR-repressed promoter",
-            "length": 350,
-            "note": "Seven tetO operators over a minimal CYC1 core promoter.",
-        },
-        "cds": {
-            "id": "tetR_NLS",
-            "locus": None,
-            "name": "TetR repressor with NLS",
-            "length": 642,
-            "note": "621 bp TetR plus a 21 bp nuclear localisation signal.",
-        },
+        "promoter": YeastPart(
+            id="ptetO7",
+            name="tetO7-CYC1core - TetR-repressed promoter",
+            length=350,
+            note="Seven tetO operators over a minimal CYC1 core promoter.",
+        ),
+        "cds": YeastPart(
+            id="tetR_NLS",
+            name="TetR repressor with NLS",
+            length=642,
+            note="621 bp TetR plus a 21 bp nuclear localisation signal.",
+        ),
     },
     "lexa": {
-        "promoter": {
-            "id": "plexA8",
-            "locus": None,
-            "name": "lexAop8-CYC1core - LexA-repressed promoter",
-            "length": 380,
-            "note": "Eight lexA operators over a minimal CYC1 core promoter.",
-        },
-        "cds": {
-            "id": "lexA_NLS",
-            "locus": None,
-            "name": "LexA repressor with NLS",
-            "length": 630,
-            "note": "609 bp LexA plus a 21 bp nuclear localisation signal.",
-        },
+        "promoter": YeastPart(
+            id="plexA8",
+            name="lexAop8-CYC1core - LexA-repressed promoter",
+            length=380,
+            note="Eight lexA operators over a minimal CYC1 core promoter.",
+        ),
+        "cds": YeastPart(
+            id="lexA_NLS",
+            name="LexA repressor with NLS",
+            length=630,
+            note="609 bp LexA plus a 21 bp nuclear localisation signal.",
+        ),
     },
 }
-
-
-def locus_url(locus: str | None) -> str | None:
-    """Where a reader fetches the real sequence."""
-    return SGD_URL + locus if locus else None

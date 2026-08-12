@@ -45,6 +45,9 @@ return [
         'oxygen' => 'Oxygen',
         'quorum' => 'Cell density',
         'ph_acid' => 'Acidity (pH)',
+        'galactose' => 'Galactose (GAL1)',
+        'copper' => 'Copper (CUP1)',
+        'estradiol' => 'Beta-estradiol (Z3EV)',
     ],
 
     'chassis' => [
@@ -212,9 +215,12 @@ return [
     ],
 
     'messages' => [
+        'eukaryotic_parts_unresolved' => 'Every promoter and terminator for :chassis is several hundred bases of native sequence, carried here as a named placeholder rather than transcribed from memory. This design gives you the architecture, the part list and the coordinates — fetch the sequences from SGD before assembling anything.',
+        'nuclear_localisation_required' => 'The integrase is translated in the cytoplasm and has to be carried back into the nucleus to reach the DNA it cuts, so an SV40 localisation signal (:signal) is fused ahead of its coding sequence. Without one the construct is correct in every base and does nothing at all.',
+        'cargo_not_supplied' => 'No cargo sequence was given, so the register carries :bases placeholder bases. In a eukaryotic host the cargo is a polymerase II promoter of several hundred bases, and this tool will not write one from memory. Paste your own sequence and the orientation scan will run on it.',
         'unknown_signal' => 'There is no sensor for ":signal" in this library. Available: :available.',
         'unknown_chassis' => 'There is no host called ":chassis". Available: :available.',
-        'chassis_parts_unavailable' => 'Every promoter, ribosome binding site and terminator in this library is bacterial. None of them function in :chassis — its polymerase does not read a sigma-70 promoter and its ribosomes do not use a Shine-Dalgarno sequence — and the recombinase would additionally need a nuclear localisation signal it does not carry here. Emitting a sequence anyway would produce something that looks buildable and cannot work.',
+        'chassis_parts_unavailable' => 'There is no parts kit for :chassis in this library. Rather than dress a host in the promoters and ribosome binding sites of another domain — which would produce something that looks buildable and cannot work — the design is refused.',
         'signal_not_in_chassis' => 'The :signal sensor is not characterised in :chassis. It is characterised in: :available. A promoter that has not been measured in your host is a parameter you do not have, not a parameter equal to the one you do.',
         'no_architecture_meets_requirements' => 'Neither architecture met the requirements as stated (:reason). Relax the holding time, lengthen the signal, or raise the promoter strength.',
 

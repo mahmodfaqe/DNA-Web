@@ -144,9 +144,9 @@ class PartsKit:
     default_payload_bp: int = 0
 
 
-def _eukaryotic(entry: dict[str, object], role: str) -> Segment:
+def _eukaryotic(entry: eukaryote.YeastPart, role: str) -> Segment:
     """A yeast part: named and sized, but not transcribed from memory."""
-    return _placeholder(str(entry["id"]), str(entry["name"]), role, int(entry["length"]))
+    return _placeholder(entry.id, entry.name, role, entry.length)
 
 
 # Anderson constitutive promoter (J23119). The default cargo, because it makes
@@ -386,8 +386,8 @@ def _part_url(part_id: str) -> str | None:
 
     for group in (eukaryote.PROMOTERS, eukaryote.TERMINATORS):
         for entry in group.values():
-            if entry["id"] == part_id:
-                return eukaryote.locus_url(entry["locus"])  # type: ignore[arg-type]
+            if entry.id == part_id:
+                return entry.url
 
     return None
 
