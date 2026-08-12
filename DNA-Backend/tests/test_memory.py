@@ -141,8 +141,8 @@ def test_a_toggle_is_charged_for_the_same_leak_as_the_recombinase():
 
 
 def test_a_dna_memory_is_not_diluted_by_growth_and_a_protein_one_is():
-    fast = library.Chassis("fast", 20.0, True, True, 15, 2000.0)
-    slow = library.Chassis("slow", 120.0, True, True, 15, 2000.0)
+    fast = library.Chassis("fast", "bacteria", 20.0, True, True, 15, 2000.0)
+    slow = library.Chassis("slow", "bacteria", 120.0, True, True, 15, 2000.0)
 
     quick = ode.recombinase_outcome(
         library.ARCHITECTURES["recombinase"], library.SIGNALS["arabinose"],
@@ -228,13 +228,28 @@ def test_every_architecture_is_modelled_not_only_the_winner():
 # Refusals
 # --------------------------------------------------------------------------
 
-def test_a_host_this_parts_library_cannot_serve_is_refused():
-    """A bacterial construct labelled for a eukaryote is worse than no construct."""
-    result = design(chassis="yeast")
+def test_a_bacterial_sensor_is_refused_in_a_eukaryotic_host():
+    """The promoter is the whole point: pLac is not transcribed in a nucleus."""
+    result = design(signal="lactose", chassis="yeast")
+
+    assert result["ok"] is False
+    assert Code.SIGNAL_NOT_IN_CHASSIS in codes(result)
+    assert "fasta" not in result
+
+
+def test_a_host_with_no_parts_kit_is_refused():
+    """The guard still stands for any host the library cannot dress."""
+    bare = library.Chassis("bare", "bacteria", 30.0, False, True, 1, 2000.0)
+    original = dict(library.CHASSIS)
+    library.CHASSIS["bare"] = bare
+    try:
+        result = design(chassis="bare")
+    finally:
+        library.CHASSIS.clear()
+        library.CHASSIS.update(original)
 
     assert result["ok"] is False
     assert Code.CHASSIS_PARTS_UNAVAILABLE in codes(result)
-    assert "fasta" not in result
 
 
 def test_a_sensor_that_is_not_characterised_in_the_host_is_refused():

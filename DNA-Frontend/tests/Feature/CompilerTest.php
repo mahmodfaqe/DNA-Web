@@ -140,7 +140,7 @@ class CompilerTest extends TestCase
 
         $response = $this->get("/ku/circuit/{$circuit->id}/circuit.fasta")->assertOk();
 
-        $this->assertStringContainsString('>output_gfp', $response->streamedContent() ?: $response->getContent());
+        $this->assertStringContainsString('>output_gfp', $response->getContent());
         $response->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
     }
 

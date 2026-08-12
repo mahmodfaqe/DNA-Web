@@ -53,6 +53,10 @@ HOMOPOLYMER_MIN = 6
 _HOMOPOLYMER_PATTERN = "|".join(base + "{" + str(HOMOPOLYMER_MIN) + ",}" for base in "ACGT")
 REPEAT_MIN = 12
 
+# Fewer resolved bases than this and a GC figure is not a description of the
+# design, it is a description of how much of it is still a placeholder.
+GC_MIN_RESOLVED_BP = 100
+
 
 def reverse_complement(sequence: str) -> str:
     return sequence.translate(COMPLEMENT)[::-1]
@@ -417,14 +421,31 @@ def synthesis_difficulty(sequence: str) -> dict[str, Any]:
     Extreme GC in either direction, long homopolymers and long repeats are the
     three reasons a sequence comes back as "complex" — which in practice means
     slower, dearer, or declined.
+
+    GC is measured over the resolved bases only. Most of a construct from this
+    tool is placeholder N standing in for coding sequences that have not been
+    fetched yet, and counting those as neither G nor C put a typical design at
+    around ten percent GC and reported every one of them as extreme. The bases
+    that actually exist sit near fifty. Unknown bases are unknown; they are not
+    evidence of anything, and a warning drawn from them is noise that trains
+    the reader to ignore the ones that are real.
+
+    The homopolymer and repeat scans need no such correction: neither matches
+    an N, so both already see only real sequence — and a repeat separated by an
+    unresolved gap is still a repeat, which is why they run over the whole
+    construct rather than segment by segment.
     """
-    gc, _ = composition(sequence)
+    resolved = "".join(base for base in sequence.upper() if base in "ACGT")
+
+    gc, _ = composition(resolved)
     homopolymers = find_homopolymers(sequence)
     repeats = find_inverted_repeats(sequence)
     longest_run = max((item.end - item.start + 1 for item in homopolymers), default=0)
 
     reasons: list[str] = []
-    if gc < 30 or gc > 70:
+    # Below a floor of real sequence there is nothing to judge, and "extreme GC"
+    # would be a statement about the placeholders rather than the design.
+    if len(resolved) >= GC_MIN_RESOLVED_BP and (gc < 30 or gc > 70):
         reasons.append("gc_extreme")
     if longest_run >= 9:
         reasons.append("homopolymer")
@@ -433,6 +454,8 @@ def synthesis_difficulty(sequence: str) -> dict[str, Any]:
 
     return {
         "gc_percent": round(gc, 2),
+        "resolved_bases": len(resolved),
+        "resolved_percent": round(len(resolved) / len(sequence) * 100, 1) if sequence else 0.0,
         "longest_homopolymer": longest_run,
         "repeat_count": len(repeats),
         "reasons": reasons,

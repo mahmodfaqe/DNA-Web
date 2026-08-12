@@ -24,7 +24,13 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal
+
+# Which transcription and translation machinery a host runs. It decides which
+# parts kit can be assembled for it and which sequence scans mean anything: a
+# sigma-70 -35/-10 scan says nothing about a nucleus, and a ribosome binding
+# site says nothing to a cap-dependent ribosome.
+Domain = Literal["bacteria", "yeast"]
 
 # --------------------------------------------------------------------------
 # Host organisms
@@ -35,11 +41,12 @@ class Chassis:
     """A host cell, and what it does to a circuit placed inside it."""
 
     id: str
+    domain: Domain
     doubling_minutes: float
-    # Whether the bundled parts library — promoters, RBS and terminators drawn
-    # from the iGEM Registry — actually works in this organism. Promoters read
-    # by a bacterial sigma factor are not read at all by a eukaryotic
-    # polymerase, and an RBS is meaningless where translation is cap-dependent.
+    # Whether a parts kit exists for this host at all. Promoters read by a
+    # bacterial sigma factor are not read by a eukaryotic polymerase, and an RBS
+    # is meaningless where translation is cap-dependent — so each domain needs
+    # its own kit, and a host with no kit is refused rather than mis-served.
     parts_available: bool
     sigma70: bool               # whether the cryptic-promoter scan applies
     plasmid_copy_number: int
@@ -54,6 +61,7 @@ class Chassis:
     def as_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
+            "domain": self.domain,
             "doubling_minutes": self.doubling_minutes,
             "parts_available": self.parts_available,
             "sigma70": self.sigma70,
@@ -65,6 +73,7 @@ class Chassis:
 CHASSIS: dict[str, Chassis] = {
     "ecoli": Chassis(
         id="ecoli",
+        domain="bacteria",
         doubling_minutes=30.0,
         parts_available=True,
         sigma70=True,
@@ -73,6 +82,7 @@ CHASSIS: dict[str, Chassis] = {
     ),
     "bsubtilis": Chassis(
         id="bsubtilis",
+        domain="bacteria",
         doubling_minutes=45.0,
         parts_available=True,
         sigma70=True,          # sigma-A, close enough for the -35/-10 scan
@@ -81,16 +91,24 @@ CHASSIS: dict[str, Chassis] = {
     ),
     "yeast": Chassis(
         id="yeast",
+        domain="yeast",
         doubling_minutes=90.0,
-        # Deliberately false. Every promoter, RBS and terminator in this
-        # library is bacterial; none of them function in a eukaryotic nucleus,
-        # and a recombinase would additionally need a nuclear localisation
-        # signal it does not carry here. Emitting a sequence anyway would be
-        # the most expensive kind of helpfulness.
-        parts_available=False,
+        # Served by the eukaryotic kit in `eukaryote.py`: RNA polymerase II
+        # promoters, an A-rich translation initiation context in place of an
+        # RBS, polyadenylation terminators, and a nuclear localisation signal
+        # fused to the integrase — without which the enzyme never reaches the
+        # DNA it is meant to cut.
+        parts_available=True,
         sigma70=False,
-        plasmid_copy_number=1,
-        protein_half_life_minutes=2000.0,
+        # A CEN/ARS centromeric plasmid, which segregates like a chromosome and
+        # is held at one to two copies. A 2-micron vector would be twenty to
+        # forty, and would trade segregation stability for dosage.
+        plasmid_copy_number=2,
+        # Median half-life across the yeast proteome, Belle et al. 2006 (PNAS
+        # 103:13004). Bacterial proteins in this library are treated as stable
+        # and diluted only by growth; a yeast protein is not, and a toggle that
+        # holds its bit in protein concentration feels the difference.
+        protein_half_life_minutes=43.0,
     ),
 }
 
@@ -132,6 +150,23 @@ SIGNALS: dict[str, Signal] = {
     "oxygen": Signal("oxygen", "oxygen", 0.10, 20.0, 2, ("ecoli",)),
     "quorum": Signal("quorum", "quorum", 0.04, 60.0, 2, ("ecoli",)),
     "ph_acid": Signal("ph_acid", "ph_acid", 0.12, 15.0, 2, ("ecoli",)),
+
+    # Yeast sensors. None of the bacterial promoters above are transcribed in a
+    # nucleus, so a eukaryotic host needs its own, and these three are the ones
+    # with enough published characterisation to put numbers against.
+    #
+    # GAL1 is the reference inducible promoter of the organism: glucose
+    # repression holds it near silent, and galactose opens it by roughly three
+    # orders of magnitude, which is why it is the default here.
+    "galactose": Signal("galactose", "galactose", 0.01, 1000.0, 2, ("yeast",)),
+    # CUP1 answers to copper, and answers quickly — but it carries real basal
+    # expression, which is precisely the property that makes a recombinase
+    # memory write itself without being asked.
+    "copper": Signal("copper", "copper", 0.05, 30.0, 2, ("yeast",)),
+    # Z3EV: a synthetic zinc-finger activator released by beta-estradiol. The
+    # inducer is inert to yeast metabolism, so induction does not also change
+    # the carbon source the way a galactose switch does.
+    "estradiol": Signal("estradiol", "estradiol", 0.01, 100.0, 2, ("yeast",)),
 }
 
 

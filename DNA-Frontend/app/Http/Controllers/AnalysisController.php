@@ -6,7 +6,6 @@ use App\Http\Requests\AnalyzeRequest;
 use App\Models\Analysis;
 use App\Services\BackendException;
 use App\Services\DnaBackendClient;
-use App\Support\ErrorTranslator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,9 +39,7 @@ class AnalysisController extends Controller
         try {
             $payload = $this->backend->analyze($file);
         } catch (BackendException $exception) {
-            return back()
-                ->withInput()
-                ->withErrors(['fasta_file' => ErrorTranslator::translate($exception)]);
+            return $this->backendFailed($exception, 'fasta_file');
         }
 
         $analysis = Analysis::create([
@@ -68,22 +65,13 @@ class AnalysisController extends Controller
 
     public function json(Analysis $analysis): JsonResponse
     {
-        return response()->json($analysis->payload)
-            ->header('Content-Disposition', 'attachment; filename="dna-analysis-' . $analysis->id . '.json"');
+        return $this->jsonDownload($analysis->payload, 'dna-analysis-' . $analysis->id . '.json');
     }
 
-    /**
-     * CSV is streamed rather than assembled in memory, and carries a UTF-8 BOM
-     * so Excel opens Kurdish and Arabic headers correctly instead of mojibake.
-     */
+    /** One row per gene, in the reader's language. */
     public function csv(Analysis $analysis): StreamedResponse
     {
-        $filename = 'dna-analysis-' . $analysis->id . '.csv';
-
-        return response()->streamDownload(function () use ($analysis) {
-            $handle = fopen('php://output', 'wb');
-            fwrite($handle, "\xEF\xBB\xBF");
-
+        return $this->csvDownload('dna-analysis-' . $analysis->id . '.csv', function ($handle) use ($analysis) {
             fputcsv($handle, [
                 __('analysis.table.id'),
                 __('analysis.table.description'),
@@ -115,11 +103,7 @@ class AnalysisController extends Controller
                     $composition['ambiguous'] ?? 0,
                 ]);
             }
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        });
     }
 
     public function health(Request $request): JsonResponse

@@ -6,10 +6,9 @@ use App\Http\Requests\CompileRequest;
 use App\Models\Circuit;
 use App\Services\BackendException;
 use App\Services\DnaBackendClient;
-use App\Support\ErrorTranslator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Http\Response;
 
 class CompilerController extends Controller
 {
@@ -29,9 +28,7 @@ class CompilerController extends Controller
         try {
             $compiled = $this->backend->compile($request->string('description')->toString());
         } catch (BackendException $exception) {
-            return back()
-                ->withInput()
-                ->withErrors(['description' => ErrorTranslator::translate($exception)]);
+            return $this->backendFailed($exception, 'description');
         }
 
         $circuit = Circuit::create([
@@ -50,24 +47,16 @@ class CompilerController extends Controller
         return view('compiler.show', ['circuit' => $circuit]);
     }
 
-    /**
-     * Streamed for the same reason the CSV export is: the compiled construct
-     * is handed straight to the browser rather than held in memory first.
-     */
-    public function fasta(Circuit $circuit): StreamedResponse
+    /** The assembled circuit, as a file a synthesis order can be built from. */
+    public function fasta(Circuit $circuit): Response
     {
         abort_unless($circuit->succeeded, 404);
 
-        return response()->streamDownload(
-            fn () => print $circuit->fasta(),
-            'circuit-' . $circuit->id . '.fasta',
-            ['Content-Type' => 'text/plain; charset=UTF-8'],
-        );
+        return $this->textDownload('circuit-' . $circuit->id . '.fasta', $circuit->fasta());
     }
 
     public function json(Circuit $circuit): JsonResponse
     {
-        return response()->json($circuit->compiled)
-            ->header('Content-Disposition', 'attachment; filename="circuit-' . $circuit->id . '.json"');
+        return $this->jsonDownload($circuit->compiled, 'circuit-' . $circuit->id . '.json');
     }
 }

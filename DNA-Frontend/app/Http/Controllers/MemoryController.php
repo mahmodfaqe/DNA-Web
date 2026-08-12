@@ -6,7 +6,6 @@ use App\Http\Requests\MemoryRequest;
 use App\Models\MemoryDesign;
 use App\Services\BackendException;
 use App\Services\DnaBackendClient;
-use App\Support\ErrorTranslator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
@@ -29,9 +28,7 @@ class MemoryController extends Controller
         try {
             $result = $this->backend->memory($request->parameters());
         } catch (BackendException $exception) {
-            return back()
-                ->withInput()
-                ->withErrors(['signal' => ErrorTranslator::translate($exception)]);
+            return $this->backendFailed($exception, 'signal');
         }
 
         $design = MemoryDesign::create([
@@ -62,15 +59,11 @@ class MemoryController extends Controller
     {
         abort_unless($design->succeeded, 404);
 
-        return response($design->fasta(), 200, [
-            'Content-Type' => 'text/plain; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="memory-' . $design->id . '.fasta"',
-        ]);
+        return $this->textDownload('memory-' . $design->id . '.fasta', $design->fasta());
     }
 
     public function json(MemoryDesign $design): JsonResponse
     {
-        return response()->json($design->result)
-            ->header('Content-Disposition', 'attachment; filename="memory-' . $design->id . '.json"');
+        return $this->jsonDownload($design->result, 'memory-' . $design->id . '.json');
     }
 }

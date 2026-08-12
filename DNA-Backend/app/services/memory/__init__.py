@@ -61,11 +61,10 @@ def _read_request(payload: dict[str, Any], report: Report) -> library.Requiremen
 
     host = library.CHASSIS[chassis]
     if not host.parts_available:
-        # Refusing here rather than emitting a bacterial construct labelled for
-        # a eukaryote. Every promoter, RBS and terminator in this library is
-        # read by a bacterial polymerase and a bacterial ribosome; none of them
-        # function in a nucleus, and a sequence that looks buildable but cannot
-        # work is worse than no sequence.
+        # Each domain is served from its own kit — bacterial parts for a
+        # bacterium, polymerase II parts for a nucleus. A host with no kit at
+        # all is refused rather than dressed in another domain's parts, because
+        # a sequence that looks buildable and cannot work is worse than none.
         report.error(Code.CHASSIS_PARTS_UNAVAILABLE, chassis=chassis)
         return None
 
@@ -91,6 +90,13 @@ def _read_request(payload: dict[str, Any], report: Report) -> library.Requiremen
         recombinase=recombinase,
         extras={"strength": _clamp(float(payload.get("strength", 0.7)), 0.1, 1.0)},
     )
+
+
+def eukaryote_nls() -> str:
+    """The peptide the integrase has to carry, named in the diagnostic itself."""
+    from .eukaryote import NLS_PEPTIDE
+
+    return NLS_PEPTIDE
 
 
 def _score(outcome: ode.Outcome, need: library.Requirements, hold_minutes: float) -> dict[str, Any]:
@@ -315,18 +321,35 @@ def design(payload: dict[str, Any]) -> dict[str, Any]:
     winner = ranked[0]["architecture"]
 
     # --- the sequence -----------------------------------------------------
-    cargo = sequence.clean(str(payload.get("payload") or "")) or construct.DEFAULT_PAYLOAD
+    kit = construct.KITS[host.domain]
+
+    supplied = sequence.clean(str(payload.get("payload") or ""))
+    cargo = supplied or kit.default_payload
     if len(cargo) > MAX_PAYLOAD_BP:
         cargo = cargo[:MAX_PAYLOAD_BP]
 
-    orientation = sequence.compare_orientations(cargo, host.sigma70)
-    chosen = orientation["preferred"] if orientation["decided_by_sequence"] else "forward"
+    if cargo:
+        orientation = sequence.compare_orientations(cargo, host.sigma70)
+        chosen = orientation["preferred"] if orientation["decided_by_sequence"] else "forward"
+    else:
+        # A eukaryotic cargo is a polymerase II promoter — hundreds of bases of
+        # native sequence this tool will not invent. Without those bases there
+        # is nothing to scan, and claiming an orientation would be inventing the
+        # one answer the reader came for.
+        cargo = "N" * kit.default_payload_bp
+        orientation = sequence.compare_orientations(cargo, host.sigma70)
+        chosen = "forward"
+        report.info(Code.CARGO_NOT_SUPPLIED, bases=kit.default_payload_bp)
 
     architecture = library.ARCHITECTURES[winner]
     if architecture.stores_in_dna:
-        constructs = construct.build_recombinase(architecture, signal, enzyme, cargo, chosen)
+        constructs = construct.build_recombinase(architecture, signal, enzyme, cargo, chosen, kit)
     else:
-        constructs = construct.build_toggle(signal, cargo)
+        constructs = construct.build_toggle(signal, cargo, kit)
+
+    if host.domain != "bacteria":
+        report.info(Code.NUCLEAR_LOCALISATION_REQUIRED, signal=eukaryote_nls())
+        report.info(Code.EUKARYOTIC_PARTS_UNRESOLVED, chassis=host.id)
 
     difficulty = sequence.synthesis_difficulty("".join(item.sequence for item in constructs))
 

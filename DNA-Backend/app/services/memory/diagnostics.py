@@ -45,6 +45,9 @@ class Code:
     SYNTHESIS_DIFFICULT = "synthesis_difficult"
 
     # --- readings worth pointing at (info) ---------------------------------
+    CARGO_NOT_SUPPLIED = "cargo_not_supplied"
+    NUCLEAR_LOCALISATION_REQUIRED = "nuclear_localisation_required"
+    EUKARYOTIC_PARTS_UNRESOLVED = "eukaryotic_parts_unresolved"
     ORIENTATION_CHOSEN = "orientation_chosen"
     RETENTION_ESTIMATE = "retention_estimate"
     NOISE_ESTIMATE_IS_ANALYTIC = "noise_estimate_is_analytic"

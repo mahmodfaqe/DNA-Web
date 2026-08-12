@@ -6,7 +6,6 @@ use App\Http\Requests\SimulateRequest;
 use App\Models\Simulation;
 use App\Services\BackendException;
 use App\Services\DnaBackendClient;
-use App\Support\ErrorTranslator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -38,9 +37,7 @@ class SimulatorController extends Controller
         try {
             $result = $this->backend->simulate($request->parameters());
         } catch (BackendException $exception) {
-            return back()
-                ->withInput()
-                ->withErrors(['preset' => ErrorTranslator::translate($exception)]);
+            return $this->backendFailed($exception, 'preset');
         }
 
         $simulation = Simulation::create([
@@ -62,8 +59,7 @@ class SimulatorController extends Controller
 
     public function json(Simulation $simulation): JsonResponse
     {
-        return response()->json($simulation->result)
-            ->header('Content-Disposition', 'attachment; filename="simulation-' . $simulation->id . '.json"');
+        return $this->jsonDownload($simulation->result, 'simulation-' . $simulation->id . '.json');
     }
 
     /**
@@ -78,12 +74,7 @@ class SimulatorController extends Controller
     {
         abort_unless($simulation->succeeded, 404);
 
-        $filename = 'simulation-' . $simulation->id . '.csv';
-
-        return response()->streamDownload(function () use ($simulation) {
-            $handle = fopen('php://output', 'wb');
-            fwrite($handle, "\xEF\xBB\xBF");
-
+        return $this->csvDownload('simulation-' . $simulation->id . '.csv', function ($handle) use ($simulation) {
             $genes = $simulation->geneIds();
             $trajectories = $simulation->trajectories();
 
@@ -104,8 +95,6 @@ class SimulatorController extends Controller
                 }
                 fputcsv($handle, $row);
             }
-
-            fclose($handle);
-        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+        });
     }
 }
