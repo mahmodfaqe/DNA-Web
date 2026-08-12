@@ -32,6 +32,10 @@ class SecurityHeaders
             "form-action 'self'",
             "frame-ancestors 'none'",
             "base-uri 'self'",
+            // default-src does not cover these two. Without them a plugin or a
+            // Worker is governed by nothing at all.
+            "object-src 'none'",
+            "worker-src 'none'",
         ]);
 
         $response->headers->set('Content-Security-Policy', $policy);
@@ -39,6 +43,18 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('X-Frame-Options', 'DENY');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+        // Only when the request already arrived over TLS. Sending HSTS over
+        // plain HTTP is ignored by browsers by design, and sending it from a
+        // local http://localhost:8080 would pin a developer's own machine to
+        // HTTPS for a year. `trustProxies` makes this true behind the reverse
+        // proxy that terminates TLS in production.
+        if ($request->isSecure()) {
+            $response->headers->set(
+                'Strict-Transport-Security',
+                'max-age=31536000; includeSubDomains'
+            );
+        }
 
         return $response;
     }

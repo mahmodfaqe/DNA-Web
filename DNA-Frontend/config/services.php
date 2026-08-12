@@ -24,4 +24,18 @@ return [
         'max_upload_kb' => env('MAX_UPLOAD_KB', 10240),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Data retention
+    |--------------------------------------------------------------------------
+    |
+    | How many days a stored result survives before `analyses:prune` deletes it.
+    | Read by both the scheduled job and the footer, so the number a visitor is
+    | shown is the number the job actually enforces — a promise about someone
+    | else's sequence data is worth only as much as the code behind it.
+    |
+    */
+
+    'retention_days' => (int) env('RETENTION_DAYS', 30),
+
 ];

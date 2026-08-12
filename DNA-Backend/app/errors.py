@@ -39,3 +39,16 @@ class AnalysisError(Exception):
 
     def payload(self) -> dict[str, Any]:
         return {"error": {"code": self.code, "params": self.params}}
+
+    def headers(self) -> dict[str, str]:
+        """HTTP headers this error implies.
+
+        A 429 whose wait is only in the JSON body is a 429 that every generic
+        HTTP client ignores. `Retry-After` is the standard field, and the
+        translated message keeps using the param, so the UI is unaffected.
+        """
+        retry_after = self.params.get("retry_after")
+        if self.status_code == 429 and isinstance(retry_after, int):
+            return {"Retry-After": str(retry_after)}
+
+        return {}

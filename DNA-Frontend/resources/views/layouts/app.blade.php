@@ -5,7 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
-    <title>@yield('title', __('common.app.name')) — {{ __('common.app.name') }}</title>
+    {{-- `@yield` with a default rather than a conditional: a page that sets a
+         title gets "Page — App", the index gets the app name once. It used to
+         render "DNA Analytics — DNA Analytics" on every untitled page. --}}
+    <title>@hasSection('title')@yield('title') — @endif{{ __('common.app.name') }}</title>
     <meta name="description" content="{{ __('common.app.description') }}">
 
     {{-- Tells search engines these are the same page in three languages rather
@@ -59,7 +62,7 @@
 
 <footer class="no-print mx-auto max-w-6xl px-4 pb-10 sm:px-6">
     <p class="border-t border-line pt-5 text-xs text-ink-400">
-        {{ __('common.footer.retention', ['days' => 30]) }}
+        {{ __('common.footer.retention', ['days' => config('services.retention_days', 30)]) }}
     </p>
 </footer>
 </body>

@@ -15,9 +15,14 @@ Artisan::command('inspire', function () {
 /**
  * Uploaded sequence data is personal research material. Keeping it forever is a
  * liability, not a feature, so results expire on a documented schedule.
+ *
+ * The window is read from config rather than hard-coded, because the same
+ * number has to appear in three places — the scheduled run, the footer the
+ * visitor reads, and whatever the department agreed to. One source keeps the
+ * promise on the page and the behaviour of the job from drifting apart.
  */
-Artisan::command('analyses:prune {--days=30}', function () {
-    $days = (int) $this->option('days');
+Artisan::command('analyses:prune {--days=}', function () {
+    $days = (int) ($this->option('days') ?: config('services.retention_days', 30));
     $cutoff = now()->subDays($days);
 
     $analyses = Analysis::where('created_at', '<', $cutoff)->delete();
@@ -31,4 +36,9 @@ Artisan::command('analyses:prune {--days=30}', function () {
     );
 })->purpose('Delete stored results past the retention window');
 
-Schedule::command('analyses:prune')->daily();
+// Runs in the `scheduler` container, which exists only to call `schedule:work`.
+// Before it did, this line was registered and never executed: the web container
+// starts Apache and nothing ever asked Laravel what was due.
+Schedule::command('analyses:prune')
+    ->daily()
+    ->withoutOverlapping();

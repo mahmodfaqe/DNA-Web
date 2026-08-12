@@ -15,7 +15,6 @@ from __future__ import annotations
 import logging
 import time
 import uuid
-from collections import defaultdict, deque
 from typing import Any
 
 from fastapi import BackgroundTasks, Body, Depends, FastAPI, File, Request, UploadFile
@@ -25,6 +24,7 @@ from fastapi.responses import JSONResponse
 from .config import settings
 from .errors import AnalysisError, ErrorCode
 from .jobs import store
+from .ratelimit import RateLimiter
 from .services import biocompiler, bionoise, fasta, memory
 
 logging.basicConfig(
@@ -37,8 +37,13 @@ app = FastAPI(
     title=settings.app_name,
     version=settings.version,
     description="FASTA analysis service: composition, thermodynamics, ORFs and variant calling.",
-    docs_url="/docs",
-    openapi_url="/openapi.json",
+    # Off unless ENABLE_DOCS says otherwise. The service is reachable only from
+    # the frontend container, so nothing in production needs to browse the
+    # schema; leaving it on would publish an endpoint and payload inventory to
+    # anyone who ever gets a foothold on that network.
+    docs_url="/docs" if settings.enable_docs else None,
+    redoc_url="/redoc" if settings.enable_docs else None,
+    openapi_url="/openapi.json" if settings.enable_docs else None,
 )
 
 app.add_middleware(
@@ -75,34 +80,30 @@ async def request_context(request: Request, call_next):
 # Rate limiting
 # --------------------------------------------------------------------------
 
-_hits: dict[str, deque[float]] = defaultdict(deque)
+limiter = RateLimiter(
+    per_minute=settings.rate_limit_per_minute,
+    max_clients=settings.rate_limit_max_clients,
+)
 
 
 def rate_limit(request: Request) -> None:
-    """Fixed-window-free sliding limiter, keyed by client address.
+    """Reject a caller that is over its per-minute allowance.
 
-    Deliberately in-process: behind a single container this is enough to stop a
-    naive flood. A multi-replica deployment should move this to the reverse proxy
-    or Redis rather than trusting per-process counters.
+    Keyed on the socket peer rather than on a header, so it cannot be evaded by
+    sending a different `X-Forwarded-For`. Behind a reverse proxy that makes
+    every request look like it comes from the proxy — which is correct here,
+    because the frontend is the only legitimate caller and it is throttled per
+    visitor in Laravel before it ever reaches this service.
     """
-    if settings.rate_limit_per_minute <= 0:
-        return
-
     client = request.client.host if request.client else "unknown"
-    now = time.time()
-    window = _hits[client]
+    retry_after = limiter.check(client)
 
-    while window and now - window[0] > 60:
-        window.popleft()
-
-    if len(window) >= settings.rate_limit_per_minute:
+    if retry_after is not None:
         raise AnalysisError(
             ErrorCode.RATE_LIMITED,
             status_code=429,
-            retry_after=int(60 - (now - window[0])) + 1,
+            retry_after=int(retry_after) + 1,
         )
-
-    window.append(now)
 
 
 # --------------------------------------------------------------------------
@@ -117,7 +118,11 @@ async def analysis_error_handler(request: Request, exc: AnalysisError) -> JSONRe
         exc.params,
         getattr(request.state, "request_id", "-"),
     )
-    return JSONResponse(status_code=exc.status_code, content=exc.payload())
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=exc.payload(),
+        headers=exc.headers(),
+    )
 
 
 @app.exception_handler(Exception)
@@ -169,6 +174,9 @@ async def health() -> dict[str, Any]:
         "service": "dna-backend",
         "version": settings.version,
         "jobs_in_memory": store.size(),
+        # Both in-memory tables are reported so a deployment can be watched for
+        # the growth that used to be invisible until the process ran out of room.
+        "rate_limit_clients": limiter.tracked_clients(),
     }
 
 

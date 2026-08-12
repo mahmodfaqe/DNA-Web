@@ -24,6 +24,13 @@ def _list_env(name: str, default: str) -> list[str]:
     return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
 
 
+def _bool_env(name: str, default: bool) -> bool:
+    raw = os.getenv(name)
+    if raw is None or not raw.strip():
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
 @dataclass(frozen=True)
 class Settings:
     """Runtime settings, resolved once at import time."""
@@ -59,6 +66,16 @@ class Settings:
     # --- Networking -----------------------------------------------------
     cors_origins: list[str] = field(default_factory=lambda: _list_env("CORS_ORIGINS", "*"))
     rate_limit_per_minute: int = field(default_factory=lambda: _int_env("RATE_LIMIT_PER_MINUTE", 30))
+    # How many client addresses the limiter will hold state for. Past this the
+    # least recently seen are forgotten, so a flood from many addresses costs
+    # bounded memory rather than growing one entry per address forever.
+    rate_limit_max_clients: int = field(default_factory=lambda: _int_env("RATE_LIMIT_MAX_CLIENTS", 4096))
+
+    # --- Exposure --------------------------------------------------------
+    # The interactive schema browser is a development convenience. It is off by
+    # default because it enumerates every endpoint and payload shape, and the
+    # service is meant to sit on an internal network where nobody needs it.
+    enable_docs: bool = field(default_factory=lambda: _bool_env("ENABLE_DOCS", False))
 
     log_level: str = field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO").upper())
 

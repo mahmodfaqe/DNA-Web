@@ -1,25 +1,59 @@
 name: dna-web
 
+# Every service shares the same log settings. Without this, a container that
+# logs steadily fills the host disk with a single unbounded JSON file, and the
+# first symptom is the database refusing to write.
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "5"
+
 services:
   backend:
     build: ./DNA-Backend
     container_name: dna_backend
     restart: unless-stopped
-    ports:
-      - "8000:8000"
+    <<: *logging
+    # Deliberately not published. The frontend reaches it over the internal
+    # network by service name, and it is the frontend that validates uploads and
+    # throttles per visitor. Publishing 8000 would put an unauthenticated
+    # compute endpoint on the host and let a caller skip both.
+    #
+    # To reach it while developing, either `docker compose exec backend ...` or
+    # add `ports: ["127.0.0.1:8000:8000"]` in an uncommitted compose.override.yml.
+    expose:
+      - "8000"
     environment:
       MAX_FILE_SIZE: ${MAX_FILE_SIZE:-10485760}
       MAX_RECORDS: ${MAX_RECORDS:-500}
       ALIGN_MAX_BP: ${ALIGN_MAX_BP:-3000}
+      ORF_MAX_SCAN_BP: ${ORF_MAX_SCAN_BP:-200000}
+      TM_NN_MAX_BP: ${TM_NN_MAX_BP:-50}
+      SIM_MAX_STEPS: ${SIM_MAX_STEPS:-6000000}
+      JOB_TTL_SECONDS: ${JOB_TTL_SECONDS:-3600}
+      JOB_STORE_MAX: ${JOB_STORE_MAX:-200}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
       RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-30}
+      RATE_LIMIT_MAX_CLIENTS: ${RATE_LIMIT_MAX_CLIENTS:-4096}
+      ENABLE_DOCS: ${ENABLE_DOCS:-false}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    # A simulation is CPU-bound by design and its cost is set by what the user
+    # asked for, not by the size of an upload. Capping it here means a runaway
+    # run degrades the analysis service instead of taking the database with it.
+    deploy:
+      resources:
+        limits:
+          cpus: "${BACKEND_CPUS:-2.0}"
+          memory: ${BACKEND_MEMORY:-1g}
     networks: [internal]
 
   db:
     image: mysql:8.0
     container_name: dna_mysql
     restart: unless-stopped
+    <<: *logging
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:?set MYSQL_DATABASE in .env}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
@@ -37,11 +71,13 @@ services:
 
   frontend:
     build: ./DNA-Frontend
+    image: dna-web-frontend
     container_name: dna_frontend
     restart: unless-stopped
+    <<: *logging
     ports:
       - "${APP_PORT:-8080}:80"
-    environment:
+    environment: &frontend_env
       APP_NAME: ${APP_NAME:-DNA Analytics}
       APP_ENV: ${APP_ENV:-production}
       APP_DEBUG: ${APP_DEBUG:-false}
@@ -50,7 +86,12 @@ services:
       APP_LOCALE: ${APP_LOCALE:-ku}
 
       BACKEND_API_URL: http://backend:8000
+      BACKEND_CONNECT_TIMEOUT: ${BACKEND_CONNECT_TIMEOUT:-5}
+      BACKEND_TIMEOUT: ${BACKEND_TIMEOUT:-120}
+      BACKEND_SIMULATION_TIMEOUT: ${BACKEND_SIMULATION_TIMEOUT:-180}
+      BACKEND_RETRIES: ${BACKEND_RETRIES:-2}
       MAX_UPLOAD_KB: ${MAX_UPLOAD_KB:-10240}
+      RETENTION_DAYS: ${RETENTION_DAYS:-30}
 
       DB_CONNECTION: mysql
       DB_HOST: db
@@ -66,8 +107,41 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      # The image declares a healthcheck against /health, so wait for the
+      # service to actually answer rather than for its process to exist. Under
+      # service_started the first upload after a deploy could reach a container
+      # that had not finished importing Biopython.
       backend:
-        condition: service_started
+        condition: service_healthy
+    networks: [internal]
+
+  # Laravel's scheduler is a cron replacement, and it still needs something to
+  # call it every minute. Nothing did: the web container runs Apache and exits
+  # its entrypoint, so `analyses:prune` was registered, documented as running
+  # daily, and never ran once. Uploaded sequence data was kept forever.
+  #
+  # A separate container rather than a background process inside the web one, so
+  # that one container keeps one job and a crashed scheduler restarts on its own
+  # instead of disappearing silently behind a healthy Apache.
+  scheduler:
+    build: ./DNA-Frontend
+    image: dna-web-frontend
+    container_name: dna_scheduler
+    restart: unless-stopped
+    <<: *logging
+    environment:
+      <<: *frontend_env
+      # Migrations belong to the web container. Two containers racing to run
+      # them on a cold start is how a half-applied schema happens.
+      SKIP_MIGRATIONS: "true"
+    command: ["php", "artisan", "schedule:work", "--no-interaction"]
+    depends_on:
+      db:
+        condition: service_healthy
+      # Healthy means the web container's entrypoint finished migrating, so the
+      # scheduler never queries a table that does not exist yet.
+      frontend:
+        condition: service_healthy
     networks: [internal]
 
 volumes:

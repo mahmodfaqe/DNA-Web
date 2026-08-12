@@ -132,7 +132,7 @@ DNA-Backend/data/mutation_demo.fasta  substitution, frameshift and in-frame dele
 # Analysis service
 cd DNA-Backend
 pip install -r requirements-dev.txt
-pytest                                # 143 tests
+pytest                                # 167 tests
 
 # Web application
 cd DNA-Frontend
@@ -165,17 +165,29 @@ Everything is set through `.env`. The values worth knowing:
 | `SIM_MAX_STEPS` | `6000000` | Reaction events one simulation may spend |
 | `BACKEND_SIMULATION_TIMEOUT` | `180` | Seconds the frontend waits for a simulation |
 | `CORS_ORIGINS` | `http://localhost:8080` | Set to your real domain in production |
+| `RETENTION_DAYS` | `30` | Days a stored result survives; shown in the footer |
+| `RATE_LIMIT_MAX_CLIENTS` | `4096` | Addresses the throttle keeps state for |
+| `ENABLE_DOCS` | `false` | Serve the interactive schema browser at `/docs` |
+| `BACKEND_CPUS` / `BACKEND_MEMORY` | `2.0` / `1g` | Ceilings on the analysis container |
 
 Keep `MAX_FILE_SIZE` and `MAX_UPLOAD_KB` consistent, or a file will pass one
 check and fail the other with a less helpful message.
 
 ## API
 
-The analysis service documents itself at `/docs` when reachable.
+The analysis service is not published to the host: it listens on the internal
+compose network and the web application is its only caller. To reach it while
+developing, use `docker compose exec backend …`, or add a
+`ports: ["127.0.0.1:8000:8000"]` override in an uncommitted
+`compose.override.yml`.
+
+It can describe itself interactively at `/docs`, but only when `ENABLE_DOCS=true`.
+That is off by default because the page enumerates every endpoint and payload
+shape, and nothing in production needs it.
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /health` | Liveness, version, in-memory job count |
+| `GET /health` | Liveness, version, and the size of both in-memory tables |
 | `POST /api/v1/analyze` | Analyse a FASTA file, returns the full result |
 | `POST /api/v1/compile` | Compile a description into a circuit |
 | `POST /api/v1/simulate` | Run a stochastic simulation, returns the full result |
@@ -197,12 +209,17 @@ Errors always take this shape:
 Uploaded sequences are research material, so results are not kept indefinitely:
 
 ```bash
-docker compose exec frontend php artisan analyses:prune --days=30
+docker compose exec frontend php artisan analyses:prune
 ```
 
 This covers stored analyses, compiled circuits, simulation runs and memory
-designs alike, and runs daily through the scheduler. Adjust the window to whatever policy your
-department settles on.
+designs alike. It runs daily in the `scheduler` container, which exists only to
+call `php artisan schedule:work`; without it the schedule is a registration that
+nothing ever executes, and nothing is ever deleted.
+
+The window is `RETENTION_DAYS`, and the footer shows the same value, so what a
+visitor is told about their sequence data is what the job enforces. Pass
+`--days=` to override it for one run.
 
 ## Backups
 
@@ -220,6 +237,8 @@ docker compose exec -T db mysql -u root -p dna_db < dna_db_backup.sql
 - [ ] `APP_URL` set to the public URL, over HTTPS
 - [ ] TLS terminated by a reverse proxy in front of `frontend`
 - [ ] A retention window agreed with whoever owns the data
+- [ ] `docker compose ps` shows `scheduler` running, or nothing is ever pruned
+- [ ] Port 8000 is not reachable from outside the compose network
 
 ## A note on the memory architect's output
 
