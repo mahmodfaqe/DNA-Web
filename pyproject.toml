@@ -28,6 +28,9 @@ ignore = [
     # `File(...)` / `Body(...)`. B008 exists to catch mutable defaults; here it
     # only catches the framework's documented idiom.
     "B008",
+    # "Rewrite this if/else as a ternary." Where the branches carry a comment
+    # explaining a scientific threshold, the ternary is the less readable form.
+    "SIM108",
 ]
 
 [tool.ruff.lint.per-file-ignores]

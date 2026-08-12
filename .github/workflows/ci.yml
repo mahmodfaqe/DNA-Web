@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A second push to the same branch cancels the run still in flight.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 8.4 is what the Docker image ships. 8.3 is the floor composer.json
+        # allows, and is tested so the floor stays honest.
+        php: ['8.3', '8.4']
+
+    defaults:
+      run:
+        working-directory: DNA-Frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, zip, fileinfo, pdo_sqlite
+          coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ matrix.php }}-${{ hashFiles('DNA-Frontend/composer.lock') }}
+          restore-keys: composer-${{ matrix.php }}-
+
+      - run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Code style
+        run: ./vendor/bin/pint --test
+
+      # Only on 8.4: PHPStan resolves types per PHP version, and one report of a
+      # given finding is enough.
+      - name: Static analysis
+        if: matrix.php == '8.4'
+        run: ./vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      - name: Tests
+        run: php artisan test
+
+  backend:
+    name: Backend (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.12', '3.13']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: DNA-Backend/requirements-dev.txt
+
+      - run: pip install -r DNA-Backend/requirements-dev.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Type check
+        run: mypy
+
+      - name: Tests
+        run: python -m pytest -q
+        working-directory: DNA-Backend
+
+  # The thing that actually broke in production: a stale bootstrap/cache from a
+  # dev machine getting baked into the image. Building here proves the image
+  # boots from a clean checkout.
+  image:
+    name: Docker image boots
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and start the stack
+        run: docker compose up -d --build
+
+      - name: Wait for the frontend to answer
+        run: |
+          for attempt in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:8080/up > /dev/null; then
+              echo "up after ${attempt} attempt(s)"
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "frontend never came up" >&2
+          docker compose logs --no-color
+          exit 1
+
+      - name: Every language renders
+        run: |
+          for locale in ku ar en; do
+            curl -fsS "http://127.0.0.1:8080/${locale}" > /dev/null
+            echo "/${locale} ok"
+          done
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs --no-color

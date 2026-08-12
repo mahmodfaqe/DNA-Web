@@ -47,6 +47,10 @@ STEM_MIN = 5
 LOOP_RANGE = (3, 9)
 TERMINATOR_TAIL = 4
 HOMOPOLYMER_MIN = 6
+
+# A run of one base, six or more long. The `{n,}` quantifier's braces collide
+# with f-string interpolation, so it is assembled rather than formatted.
+_HOMOPOLYMER_PATTERN = "|".join(base + "{" + str(HOMOPOLYMER_MIN) + ",}" for base in "ACGT")
 REPEAT_MIN = 12
 
 

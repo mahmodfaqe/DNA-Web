@@ -279,10 +279,12 @@ def run_cell(net: Network, settings: RunSettings, seed: int, cell_index: int = 0
     switches = 0
     last_state: str | None = None
     threshold = net.switch_threshold
-    bistable = net.bistable_pair is not None
-    if bistable:
-        first = net.index(net.bistable_pair[0])
-        second = net.index(net.bistable_pair[1])
+    pair = net.bistable_pair
+    bistable = pair is not None
+    first = second = 0
+    if pair is not None:
+        first = net.index(pair[0])
+        second = net.index(pair[1])
 
     def record(index: int) -> None:
         nonlocal switches, last_state, availability_sum, availability_count

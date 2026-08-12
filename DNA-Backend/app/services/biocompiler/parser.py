@@ -217,10 +217,10 @@ def _parse_conditions(tokens: list[str], report: Report) -> tuple[list[Condition
             position += negation[1]
             continue
 
-        connective = _match_at(tokens, position, _CONNECTIVE_INDEX)
-        if connective and conditions:
-            connectives.append(connective[0])
-            position += connective[1]
+        connective_match = _match_at(tokens, position, _CONNECTIVE_INDEX)
+        if connective_match and conditions:
+            connectives.append(connective_match[0])
+            position += connective_match[1]
             continue
 
         sensor = _match_at(tokens, position, _SENSOR_INDEX)
