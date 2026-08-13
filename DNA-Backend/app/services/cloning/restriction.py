@@ -214,11 +214,22 @@ def digest(
 
     for item in cutters:
         if item["unresolvable_pairs"]:
+            # Scalars, not the nested list. A diagnostic parameter is something
+            # a translated sentence substitutes into, so it has to be a value a
+            # sentence can hold — the renderer that formats these is shared by
+            # every tool and joins lists into text. Handing it a list of
+            # dictionaries took the whole result page down with a 500.
+            closest = min(
+                item["unresolvable_pairs"],
+                key=lambda pair: pair["larger"] - pair["smaller"],
+            )
             report.warn(
                 Code.FRAGMENTS_UNRESOLVABLE,
                 span=item["enzyme"],
                 enzyme=item["enzyme"],
-                pairs=item["unresolvable_pairs"][:3],
+                larger=closest["larger"],
+                smaller=closest["smaller"],
+                pairs=len(item["unresolvable_pairs"]),
             )
 
     # Two properties this tool does not model, said once rather than implied by

@@ -38,8 +38,25 @@
             @foreach ($items as $diagnostic)
                 @php
                     $key = $namespace . '.messages.' . $diagnostic['code'];
+
+                    // Diagnostic parameters are substituted into a translated
+                    // sentence, so they have to be values a sentence can hold.
+                    // Five tools feed this component and a new code can arrive
+                    // with any shape at all; a nested array here once took a
+                    // whole result page down with a 500 over one warning that
+                    // was not even the important one on the page. Flattened
+                    // rather than trusted — a diagnostic that renders awkwardly
+                    // is better than a result the reader cannot see.
+                    $flatten = function ($value) use (&$flatten) {
+                        if (is_array($value)) {
+                            return implode(', ', array_map($flatten, $value));
+                        }
+
+                        return is_bool($value) ? ($value ? '1' : '0') : (string) $value;
+                    };
+
                     $params = collect($diagnostic['params'] ?? [])
-                        ->map(fn ($value) => is_array($value) ? implode(', ', $value) : $value)
+                        ->map(fn ($value) => is_scalar($value) ? $value : $flatten($value))
                         ->all();
 
                     // A language name is itself translatable, so the parameter is

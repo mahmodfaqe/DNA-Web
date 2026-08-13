@@ -323,6 +323,54 @@ class CloningTest extends TestCase
             ->assertSee(__('cloning.limits.methylation'), false);
     }
 
+    /**
+     * The 500 that took a whole result page down.
+     *
+     * A warning about two gel bands being hard to tell apart carried a nested
+     * array, the shared renderer joined it into text, and the reader lost the
+     * primers, the enzyme table and everything else on the page — over the
+     * least important note on it. The parameter shape is fixed at the backend
+     * boundary; this asserts the renderer no longer depends on that being true,
+     * because five tools feed it and a new code can arrive with any shape.
+     */
+    public function test_a_diagnostic_with_a_nested_parameter_does_not_take_the_page_down(): void
+    {
+        $result = $this->backendResult();
+        $result['diagnostics'][] = [
+            'code' => 'fragments_unresolvable',
+            'severity' => 'warning',
+            'params' => ['enzyme' => 'BamHI', 'pairs' => [['larger' => 210, 'smaller' => 200]]],
+            'span' => 'BamHI',
+        ];
+        $result['diagnostic_counts'] = ['error' => 0, 'warning' => 1, 'info' => 2];
+
+        $plan = $this->plan(['result' => $result]);
+
+        $this->get(route('cloning.show', ['plan' => $plan->id]))
+            ->assertOk()
+            // The rest of the page still has to be there, which is the point.
+            ->assertSee(__('cloning.primers.title'), false);
+    }
+
+    public function test_the_band_warning_names_both_sizes(): void
+    {
+        $result = $this->backendResult();
+        $result['diagnostics'][] = [
+            'code' => 'fragments_unresolvable',
+            'severity' => 'warning',
+            'params' => ['enzyme' => 'BamHI', 'larger' => 210, 'smaller' => 200, 'pairs' => 1],
+            'span' => 'BamHI',
+        ];
+        $result['diagnostic_counts'] = ['error' => 0, 'warning' => 1, 'info' => 2];
+
+        $plan = $this->plan(['result' => $result]);
+
+        $this->get(route('cloning.show', ['plan' => $plan->id]))
+            ->assertOk()
+            ->assertSee('210')
+            ->assertSee('200');
+    }
+
     public function test_diagnostics_are_rendered_in_the_readers_language(): void
     {
         $plan = $this->plan();

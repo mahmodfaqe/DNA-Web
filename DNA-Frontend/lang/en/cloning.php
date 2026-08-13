@@ -190,7 +190,7 @@ return [
         'tail_site_cuts_amplicon' => ':enzyme (:site) cuts inside the fragment :cuts time(s). Digesting the product would cut the insert as well as opening its ends — choose an enzyme from the "does not cut" list instead.',
         'tail_sites_incompatible' => 'Both ends would be left with the same :overhang overhang, so the fragment can go into the vector either way round and can also close on itself. Directional cloning needs two different overhangs.',
         'no_unique_cutter' => 'Nothing in this panel of :searched enzymes cuts this molecule exactly once.',
-        'fragments_unresolvable' => ':enzyme produces fragments too close in size to separate on a normal agarose gel.',
+        'fragments_unresolvable' => ':enzyme leaves :larger bp and :smaller bp, which run as one band on a normal agarose gel. Counting the bands would undercount the cuts.',
         'primer_tm_mismatch' => 'The two primers melt :delta °C apart (:forward_tm and :reverse_tm). Above :maximum °C they cannot share one annealing step: the colder one will not bind, or the hotter one will bind somewhere it should not.',
         'primer_self_dimer' => 'The :primer primer is complementary to itself over :bases bases and will pair with a copy of itself instead of the template.',
         'primer_pair_dimer' => 'The two primers are complementary to each other over :bases bases and will amplify each other.',

@@ -132,7 +132,7 @@ DNA-Backend/data/mutation_demo.fasta  substitution, frameshift and in-frame dele
 # Analysis service
 cd DNA-Backend
 pip install -r requirements-dev.txt
-pytest                                # 242 tests
+pytest                                # 271 tests
 
 # Web application
 cd DNA-Frontend
