@@ -6,6 +6,7 @@ return [
         'compiler' => 'مترجم الدارات',
         'simulator' => 'محاكي الضوضاء',
         'memory' => 'معمار الذاكرة',
+        'cloning' => 'الاستنساخ',
     ],
 
     'hero' => [
@@ -167,5 +168,14 @@ return [
         'ar' => 'العربية',
         'en' => 'الإنجليزية',
         'unknown' => 'غير محدَّدة',
+    ],
+    'export' => [
+        'title' => 'خذ هذا إلى مكان آخر',
+        'note' => 'يحمل FASTA القواعد. وهذه تحمل ما تعنيه القواعد — أي جزء هو مروّج، وأين يبدأ كل منها وينتهي.',
+        'sbol' => 'SBOL 2.3',
+        'sbol_note' => 'SynBioHub وSBOLCanvas وiBioSim',
+        'genbank' => 'GenBank',
+        'genbank_note' => 'SnapGene وApE وBenchling وGeneious',
+        'placeholder_warning' => 'تُصدَّر التسلسلات المشفّرة كسلاسل من N. احصل على كل واحد منها من السجل قبل الطلب.',
     ],
 ];

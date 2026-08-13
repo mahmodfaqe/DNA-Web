@@ -2,6 +2,14 @@
 pytest>=8.0
 httpx>=0.27
 
+# The reference SBOL implementation. Used only to *read back* what the
+# hand-written exporter produces, so the correctness claim rests on the
+# standard's own library rather than on our opinion of our own output.
+# Deliberately not in requirements.txt: it pulls rdflib, lxml, requests and
+# urllib3, none of which belong in a runtime image that has four dependencies
+# and is not a web client.
+sbol2>=1.4
+
 # Linting and type checking. Configured in the repository-root pyproject.toml
 # so `ruff check .` and `mypy` work from either the root or this directory.
 ruff>=0.6

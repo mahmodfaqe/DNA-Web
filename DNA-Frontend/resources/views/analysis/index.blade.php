@@ -85,6 +85,8 @@ GTGCTGTCTCCTGCAGATAAGACCAACGTC</pre>
         </div>
     </section>
 
+    <x-samples group="analysis" class="mt-10" />
+
     @if ($recent->isNotEmpty())
         <section class="mx-auto mt-6 max-w-2xl">
             <div class="panel overflow-hidden">

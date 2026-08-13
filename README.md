@@ -12,7 +12,7 @@ missense or nonsense.
 
 ---
 
-## Four tools
+## Four tools, and what leaves them
 
 **Sequence analysis** — upload a FASTA file, get composition, thermodynamics,
 reading frames and an aligned comparison.
@@ -132,7 +132,7 @@ DNA-Backend/data/mutation_demo.fasta  substitution, frameshift and in-frame dele
 # Analysis service
 cd DNA-Backend
 pip install -r requirements-dev.txt
-pytest                                # 167 tests
+pytest                                # 242 tests
 
 # Web application
 cd DNA-Frontend
@@ -194,6 +194,10 @@ shape, and nothing in production needs it.
 | `GET /api/v1/simulate/presets` | The networks the simulator can run |
 | `POST /api/v1/memory` | Compare memory architectures, returns the design and its DNA |
 | `GET /api/v1/memory/options` | Signals, hosts and recombinases available |
+| `POST /api/v1/compile/export` | Compile and return SBOL 2.3 or GenBank |
+| `GET /api/v1/compile/formats` | Design formats a circuit can be exported as |
+| `POST /api/v1/cloning` | Restriction analysis and primer design for a template |
+| `GET /api/v1/cloning/panels` | Enzyme panels the service searches |
 | `POST /api/v1/analyze-async` | Queue an analysis, returns a `job_id` |
 | `GET /api/v1/job/{job_id}` | Poll an async job |
 
@@ -261,6 +265,113 @@ nor divide — dilution is folded into the protein decay rate.
 
 Use it to understand which effects matter and how they behave. Do not use it to
 predict what your plasmid will do. Every result says as much, on the page.
+
+## Cloning: restriction analysis and primer design
+
+Two questions that are usually separate tools are one tool here, because the
+question a student is actually answering needs both at once: *can I amplify this
+fragment and clone it into that vector*.
+
+```
+600 bp template, amplify 20..560, tails EcoRI / XhoI
+
+  unique cutters   BglII  EcoRV  KpnI  NdeI  SphI
+  EcoRI            cuts 0x inside the amplicon  ✓ safe as a tail
+  forward   TTTTTT GAATTC TTCACTCTGAAACATAAGGATAGAATAG
+                          └ binding Tm 59.9      full-length Tm 64.7
+```
+
+Two temperatures, because in cycle one only the binding region has anything to
+pair with — the tail is hanging free. Annealing temperature comes from the
+binding region alone, and reporting only the full-length figure is how a PCR
+gets run five degrees too hot.
+
+Enzyme data is Biopython's `Bio.Restriction`, generated from REBASE, so
+recognition sites and cut offsets are the same numbers as the supplier's
+datasheet. What this adds is the reasoning around them: which enzymes cut
+exactly once, which never cut, and which fragment pairs are too close in size to
+tell apart on a gel.
+
+The primer designer is teaching-grade and says so. Melting temperatures are
+nearest-neighbour under one named condition set, reported with the result so
+they can be recomputed. Secondary structure is a complementarity screen, not a
+free-energy calculation. The uniqueness check is against the submitted template
+only — it has never seen a genome, and every result says as much.
+
+## Exporting a circuit
+
+FASTA carries bases. It does not carry the fact that those 22 bases are a
+BioBrick prefix and the next 200 are a promoter, so a design that leaves as
+FASTA has lost everything the compiler decided.
+
+```bash
+curl -X POST localhost:8000/api/v1/compile/export \
+  -d '{"text": "if lactose then produce green protein", "format": "sbol"}'
+```
+
+**SBOL 2.3** for the design ecosystem — SynBioHub, SBOLCanvas, iBioSim. Each
+part keeps its identity, its role as a Sequence Ontology term, and its
+coordinates. **GenBank** for the software on a student's laptop — SnapGene, ApE,
+Benchling, Geneious — which read GenBank and not SBOL.
+
+The SBOL writer is hand-rolled `xml.etree` rather than the `sbol2` library,
+which would pull rdflib, lxml, requests and urllib3 into a runtime image that
+has four dependencies and is not a web client. `sbol2` is a *development*
+dependency instead: the test suite reads every exported document back with the
+reference implementation and checks the parts, roles and coordinates survived.
+
+A placeholder CDS exports as a run of N. That is the honest export of what the
+compiler decided — the region is this long and its bases are not known here —
+and the GenBank feature carries a note saying so.
+
+## Samples, and whether they still teach
+
+Six sequences in `DNA-Frontend/resources/samples`, each engineered so that one
+specific thing becomes visible when it is run through the real service. Each
+arrives with its question attached, in all three languages — a sequence handed
+over without one is a sequence nobody knows what to do with.
+
+| Sample | What it makes visible |
+|---|---|
+| `gc-skew.fasta` | A statistic that means nothing base by base and a great deal cumulatively |
+| `variants.fasta` | One synonymous, one missense and one nonsense change — all single bases |
+| `reverse-strand-orf.fasta` | Why a reading-frame search has to look at six frames, not three |
+| `ambiguous-bases.fasta` | What the tool stops being able to say when a base is N |
+| `cloning-trap.fasta` | An insert carrying the site you were about to clone it with |
+| `plasmid-topology.fasta` | One molecule, one enzyme, two different digests |
+
+They are generated rather than committed by hand:
+
+```bash
+cd DNA-Backend && python tools/build_samples.py
+```
+
+That script **refuses to write anything** unless every sample still produces the
+result it claims — the variants file must still yield exactly one change of each
+consequence, the trap must still spring the tail-site warning, the reverse-strand
+ORF must still be the longest one. Run it after any change to the analysis or
+cloning services. A lesson plan that quietly stopped working wastes a class's
+time, and the instructor finds out in front of them.
+
+`cloning-trap.fasta` is the one worth using first. The form arrives pre-filled,
+because a reader asked to choose the enzymes themselves picks a different pair
+and never meets the warning.
+
+## Validation
+
+The numbers are checked against implementations written by people who had never
+seen this codebase — `primer3` for melting temperatures and secondary structure,
+EMBOSS `getorf` for reading frames. Melting temperatures agree with primer3
+**exactly**, to the two decimal places reported, and any of them can be
+reproduced in one line:
+
+```bash
+oligotm -tp 1 -sc 1 -mv 50 -dv 1.5 -n 0.2 -d 250 ATGCGTAAAGGAGAAGAACT
+```
+
+That was not the first result. Two conventions had to change to get there, and
+the full record — including what is still unchecked — is in
+[docs/VALIDATION.md](docs/VALIDATION.md).
 
 ## A note on the compiler's output
 

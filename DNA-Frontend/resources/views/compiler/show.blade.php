@@ -92,6 +92,41 @@
                 </section>
             @endif
 
+            {{-- FASTA is one link in the header; these are a panel of their own,
+                 because they are the difference between a sequence and a design.
+                 A reader who has never met SBOL needs to be told which tool each
+                 file opens in, so the format name alone is not the label. --}}
+            <section class="panel overflow-hidden no-print">
+                <div class="panel-head">
+                    <div>
+                        <h2 class="panel-title">{{ __('compiler.export.title') }}</h2>
+                        <p class="panel-note">{{ __('compiler.export.note') }}</p>
+                    </div>
+                </div>
+
+                <ul class="divide-y divide-line">
+                    @foreach (['sbol', 'genbank'] as $format)
+                        <li>
+                            <a href="{{ route('compiler.export', ['circuit' => $circuit->id, 'format' => $format]) }}"
+                               class="flex items-center justify-between gap-4 px-5 py-3.5 transition hover:bg-paper">
+                                <span class="min-w-0">
+                                    <span class="block text-sm font-semibold">{{ __('compiler.export.' . $format) }}</span>
+                                    <span class="ltr-data block text-xs text-ink-400">{{ __('compiler.export.' . $format . '_note') }}</span>
+                                </span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                     class="h-4 w-4 shrink-0 text-ink-400" aria-hidden="true">
+                                    <path d="M12 4v12M7 12l5 5 5-5M5 20h14" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+
+                <p class="border-t border-line bg-paper px-5 py-3 text-xs text-ink-500">
+                    {{ __('compiler.export.placeholder_warning') }}
+                </p>
+            </section>
+
             <section class="panel overflow-hidden">
                 <div class="panel-head">
                     <div>

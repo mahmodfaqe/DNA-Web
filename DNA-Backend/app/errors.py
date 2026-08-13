@@ -25,6 +25,7 @@ class ErrorCode:
     SEQUENCE_INVALID_CHARS = "sequence_invalid_chars"
     JOB_NOT_FOUND = "job_not_found"
     RATE_LIMITED = "rate_limited"
+    UNSUPPORTED_FORMAT = "unsupported_format"
     INTERNAL = "internal_error"
 
 

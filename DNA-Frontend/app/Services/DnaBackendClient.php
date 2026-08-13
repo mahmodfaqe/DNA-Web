@@ -175,6 +175,86 @@ class DnaBackendClient
         throw $this->toException($response, $requestId);
     }
 
+    /**
+     * Restriction analysis and primer design for one template.
+     *
+     * Shares the analysis timeout rather than the simulation one: the work is a
+     * sequence scan and a bounded candidate search, closer in cost to parsing a
+     * FASTA file than to integrating an ODE.
+     *
+     * A design the user will not like is still a 200 — a primer pair that cannot
+     * share an annealing step comes back with the pair *and* the diagnostic.
+     * Only transport and server faults raise.
+     *
+     * @param  array<string, mixed>  $parameters
+     * @return array<string, mixed>
+     */
+    public function cloning(array $parameters): array
+    {
+        $requestId = (string) Str::uuid();
+
+        try {
+            $response = Http::withHeaders(['X-Request-ID' => $requestId])
+                ->connectTimeout($this->connectTimeout)
+                ->timeout($this->timeout)
+                ->retry($this->retries, 400, fn ($exception) => $exception instanceof ConnectionException, false)
+                ->post($this->baseUrl . '/api/v1/cloning', $parameters);
+        } catch (ConnectionException $exception) {
+            Log::error('Cloning backend unreachable', [
+                'request_id' => $requestId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw new BackendException('backend_unreachable', [], 503);
+        }
+
+        if ($response->successful()) {
+            return $response->json();
+        }
+
+        throw $this->toException($response, $requestId);
+    }
+
+    /**
+     * Compile a description and return it as SBOL or GenBank.
+     *
+     * The backend recompiles from the original sentence rather than being
+     * handed the stored result, so an export is always a document the current
+     * compiler stands behind. A circuit compiled a month ago and exported today
+     * reflects today's parts library, which is the behaviour that keeps a
+     * design honest — and the diagnostics come back with it either way.
+     *
+     * @return array<string, mixed>
+     */
+    public function exportCircuit(string $text, string $format): array
+    {
+        $requestId = (string) Str::uuid();
+
+        try {
+            $response = Http::withHeaders(['X-Request-ID' => $requestId])
+                ->connectTimeout($this->connectTimeout)
+                ->timeout($this->timeout)
+                ->retry($this->retries, 400, fn ($exception) => $exception instanceof ConnectionException, false)
+                ->post($this->baseUrl . '/api/v1/compile/export', [
+                    'text' => $text,
+                    'format' => $format,
+                ]);
+        } catch (ConnectionException $exception) {
+            Log::error('Export backend unreachable', [
+                'request_id' => $requestId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw new BackendException('backend_unreachable', [], 503);
+        }
+
+        if ($response->successful()) {
+            return $response->json();
+        }
+
+        throw $this->toException($response, $requestId);
+    }
+
     /** @return array<string, mixed> */
     public function health(): array
     {

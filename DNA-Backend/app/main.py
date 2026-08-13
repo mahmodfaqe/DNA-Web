@@ -25,7 +25,8 @@ from .config import settings
 from .errors import AnalysisError, ErrorCode
 from .jobs import store
 from .ratelimit import RateLimiter
-from .services import biocompiler, bionoise, fasta, memory
+from .services import biocompiler, bionoise, cloning, exports, fasta, memory
+from .services.cloning import restriction as cloning_restriction
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level, logging.INFO),
@@ -267,6 +268,75 @@ async def memory_options() -> dict[str, Any]:
         "chassis": list(memory.CHASSIS),
         "recombinases": list(memory.RECOMBINASES),
     }
+
+
+@app.post("/api/v1/compile/export", tags=["compiler"], dependencies=[Depends(rate_limit)])
+async def export_circuit(
+    request: dict[str, Any] = Body(...),
+) -> dict[str, Any]:
+    """Compile a description and return it in a machine-readable design format.
+
+    FASTA carries bases; these carry what the bases are *for*. SBOL is what the
+    design ecosystem reads (SynBioHub, SBOLCanvas, iBioSim); GenBank is what the
+    software on a student's laptop reads (SnapGene, ApE, Benchling).
+
+    Returned as a string in a JSON envelope rather than as a file download, so
+    the frontend owns the filename, the Content-Type and the translated label —
+    the same division of labour as every other endpoint here.
+    """
+    text = str(request.get("text") or "")
+    fmt = str(request.get("format") or "sbol").lower()
+
+    if fmt not in exports.FORMATS:
+        raise AnalysisError(ErrorCode.UNSUPPORTED_FORMAT, format=fmt,
+                            supported=sorted(exports.FORMATS))
+
+    compiled = biocompiler.compile_text(text)
+    if not compiled.get("ok"):
+        return {
+            "ok": False,
+            "format": fmt,
+            "document": "",
+            "diagnostics": compiled.get("diagnostics", []),
+        }
+
+    return {
+        "ok": True,
+        "format": fmt,
+        **exports.FORMATS[fmt],
+        "document": exports.render(compiled, fmt, source=text) or "",
+        "units": compiled["totals"]["units"],
+        "length": compiled["totals"]["length"],
+        "diagnostics": compiled.get("diagnostics", []),
+    }
+
+
+@app.get("/api/v1/compile/formats", tags=["compiler"])
+async def export_formats() -> dict[str, Any]:
+    """The design formats a compiled circuit can be exported as."""
+    return {"formats": exports.FORMATS}
+
+
+@app.post("/api/v1/cloning", tags=["cloning"], dependencies=[Depends(rate_limit)])
+def plan_cloning(request: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    """Restriction analysis and primer design for one template.
+
+    Sync for the same reason as the simulator and the memory designer: the work
+    is a sequence scan and a bounded candidate search, both CPU-bound with
+    nothing to await.
+
+    A design the user will not like is still a 200 — a primer pair that cannot
+    share an annealing step, or a tail whose enzyme also cuts the insert, comes
+    back with the design *and* the diagnostic. Only a request that cannot be
+    honoured at all is `ok: false`.
+    """
+    return cloning.plan(request)
+
+
+@app.get("/api/v1/cloning/panels", tags=["cloning"])
+async def cloning_panels() -> dict[str, Any]:
+    """The enzyme panels this service searches, for a UI building its own form."""
+    return {"panels": cloning_restriction.available_panels()}
 
 
 @app.get("/api/v1/job/{job_id}", tags=["analysis"])

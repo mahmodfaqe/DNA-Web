@@ -6,6 +6,7 @@ return [
         'compiler' => 'وەرگێڕی سێرکت',
         'simulator' => 'سیمولەیتەری دەنگەدەنگ',
         'memory' => 'مێماری یادگە',
+        'cloning' => 'کلۆنکردن',
     ],
 
     'hero' => [
@@ -167,5 +168,14 @@ return [
         'ar' => 'عەرەبی',
         'en' => 'ئینگلیزی',
         'unknown' => 'دیارینەکراو',
+    ],
+    'export' => [
+        'title' => 'ئەمە ببە بۆ شوێنێکی تر',
+        'note' => 'FASTA بەیسەکان هەڵدەگرێت. ئەمانە هەڵیدەگرن کە بەیسەکان بۆ چین — کام پارچە پرۆمۆتەرە، هەریەکەیان لەکوێ دەستپێدەکات و کۆتایی دێت.',
+        'sbol' => 'SBOL 2.3',
+        'sbol_note' => 'SynBioHub، SBOLCanvas، iBioSim',
+        'genbank' => 'GenBank',
+        'genbank_note' => 'SnapGene، ApE، Benchling، Geneious',
+        'placeholder_warning' => 'زنجیرە کۆدکەرەکان وەک ڕیزێک N دەردەچن. پێش داواکردن هەریەکەیان لە ڕیجستری وەربگرە.',
     ],
 ];

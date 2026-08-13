@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AnalysisController;
+use App\Http\Controllers\CloningController;
 use App\Http\Controllers\CompilerController;
 use App\Http\Controllers\MemoryController;
+use App\Http\Controllers\SampleController;
 use App\Http\Controllers\SimulatorController;
 use App\Http\Middleware\SetLocale;
 use App\Support\Locales;
@@ -53,6 +55,12 @@ Route::prefix('{locale}')
         Route::get('/simulation/{simulation}/export.csv', [SimulatorController::class, 'csv'])->name('simulator.csv');
         Route::get('/simulation/{simulation}/export.json', [SimulatorController::class, 'json'])->name('simulator.json');
 
+        // Machine-readable exports. SBOL for the design ecosystem, GenBank for
+        // the software on a student's laptop; FASTA above carries neither.
+        Route::get('/circuit/{circuit}/export/{format}', [CompilerController::class, 'export'])
+            ->whereIn('format', ['sbol', 'genbank'])
+            ->name('compiler.export');
+
         // Fourth tab: choose a memory architecture, and build it.
         Route::get('/memory', [MemoryController::class, 'index'])->name('memory.index');
         Route::post('/memory', [MemoryController::class, 'store'])
@@ -62,4 +70,21 @@ Route::prefix('{locale}')
         Route::get('/design/{design}', [MemoryController::class, 'show'])->name('memory.show');
         Route::get('/design/{design}/memory.fasta', [MemoryController::class, 'fasta'])->name('memory.fasta');
         Route::get('/design/{design}/export.json', [MemoryController::class, 'json'])->name('memory.json');
+
+        // The teaching samples. Downloading gives a file to upload; loading
+        // pre-fills the cloning form, which is the only way the trap sample
+        // springs — a reader who configures it themselves picks another enzyme.
+        Route::get('/samples/{file}', [SampleController::class, 'download'])->name('samples.download');
+        Route::get('/samples/{file}/load', [SampleController::class, 'load'])->name('samples.load');
+
+        // Fifth tab: where a template cuts, and what would amplify it.
+        Route::get('/cloning', [CloningController::class, 'index'])->name('cloning.index');
+        Route::post('/cloning', [CloningController::class, 'store'])
+            ->middleware('throttle:20,1')
+            ->name('cloning.store');
+
+        Route::get('/plan/{plan}', [CloningController::class, 'show'])->name('cloning.show');
+        Route::get('/plan/{plan}/primers.csv', [CloningController::class, 'csv'])->name('cloning.csv');
+        Route::get('/plan/{plan}/amplicon.fasta', [CloningController::class, 'fasta'])->name('cloning.fasta');
+        Route::get('/plan/{plan}/export.json', [CloningController::class, 'json'])->name('cloning.json');
     });

@@ -6,6 +6,7 @@ return [
         'compiler' => 'Circuit compiler',
         'simulator' => 'Noise simulator',
         'memory' => 'Memory architect',
+        'cloning' => 'Cloning',
     ],
 
     'hero' => [
@@ -173,5 +174,14 @@ return [
         'ar' => 'Arabic',
         'en' => 'English',
         'unknown' => 'Undetermined',
+    ],
+    'export' => [
+        'title' => 'Take this somewhere else',
+        'note' => 'FASTA carries the bases. These carry what the bases are for — which part is a promoter, where each one starts and ends.',
+        'sbol' => 'SBOL 2.3',
+        'sbol_note' => 'SynBioHub, SBOLCanvas, iBioSim',
+        'genbank' => 'GenBank',
+        'genbank_note' => 'SnapGene, ApE, Benchling, Geneious',
+        'placeholder_warning' => 'Coding sequences export as runs of N. Fetch each one from the registry before ordering.',
     ],
 ];

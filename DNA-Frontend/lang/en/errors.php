@@ -59,6 +59,16 @@ return [
         'payload_too_long' => 'The cargo sequence is too long. Keep it under 60,000 characters.',
     ],
 
+    'cloning' => [
+        'sequence_required' => 'Paste a DNA sequence to analyse.',
+        'sequence_too_short' => 'At least :minimum bases are needed to design anything against.',
+        'sequence_too_long' => 'Keep the sequence under :maximum characters.',
+        'panel_unknown' => 'That enzyme panel is not one this tool searches.',
+        'target_order' => 'The end of the region must come after its start.',
+        'length_order' => 'The longest primer cannot be shorter than the shortest one.',
+        'tm_range' => 'The target melting temperature must be between :minimum and :maximum °C.',
+    ],
+
     'not_found' => [
         'title' => 'Result not found',
         'body' => 'This result has expired or the link is wrong. Uploading the file again will produce a new one.',
